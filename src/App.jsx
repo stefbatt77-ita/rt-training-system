@@ -265,7 +265,18 @@ const translations = {
     perMonth: "/month",
     perYear: "/year",
     popular: "Popular",
-    currentPlan: "Current Plan"
+    currentPlan: "Current Plan",
+    // Learning Progress
+    learningProgress: "Progress",
+    defectsFound: "Defects found",
+    correct: "Correct",
+    wrongType: "Wrong type",
+    falsePositives: "False positives",
+    missed: "Missed",
+    showCorrection: "Show Correction",
+    hideCorrection: "Hide Correction",
+    missedDefects: "Missed defects",
+    allDefectsFound: "All defects found!"
   },
   it: {
     title: "Simulatore Radiografia Digitale RT",
@@ -490,7 +501,18 @@ const translations = {
     perMonth: "/mese",
     perYear: "/anno",
     popular: "Popolare",
-    currentPlan: "Piano Attuale"
+    currentPlan: "Piano Attuale",
+    // Learning Progress
+    learningProgress: "Progresso",
+    defectsFound: "Difetti trovati",
+    correct: "Corretti",
+    wrongType: "Tipo errato",
+    falsePositives: "Falsi positivi",
+    missed: "Mancanti",
+    showCorrection: "Mostra Correzione",
+    hideCorrection: "Nascondi Correzione",
+    missedDefects: "Difetti mancanti",
+    allDefectsFound: "Tutti i difetti trovati!"
   }
 };
 
@@ -2496,6 +2518,7 @@ const XRaySimulator = ({ onExamComplete }) => {
   
   // Learning mode: track which defects have been identified
   const [learningFeedback, setLearningFeedback] = useState([]); // { defectId, correct, type }
+  const [showMissedDefects, setShowMissedDefects] = useState(false); // Show correction overlay
   
   // Drag selection state
   const [isDrawing, setIsDrawing] = useState(false);
@@ -4206,6 +4229,68 @@ const XRaySimulator = ({ onExamComplete }) => {
           octx.fillText(correctionText, mark.rectX + mark.rectWidth + 8, mark.rectY + 33);
         }
       });
+      
+      // Draw missed defects overlay in learning mode when showMissedDefects is active
+      if (mode === 'learning' && showMissedDefects && examStarted) {
+        const foundDefectIds = markedDefects.filter(m => m.matchedDefect).map(m => m.matchedDefect.id);
+        const missedDefects = defects.filter(d => !foundDefectIds.includes(d.id));
+        
+        missedDefects.forEach((defect, idx) => {
+          const x = defect.x + (defect.width / 2);
+          const y = defect.y + (defect.height / 2);
+          const radius = Math.max(defect.width, defect.height) * 0.7;
+          
+          // Draw pulsing orange circle around missed defect
+          octx.beginPath();
+          octx.arc(x, y, radius, 0, Math.PI * 2);
+          octx.strokeStyle = 'rgba(255, 150, 0, 0.9)';
+          octx.lineWidth = 3;
+          octx.setLineDash([8, 4]);
+          octx.stroke();
+          octx.setLineDash([]);
+          
+          // Draw inner highlight
+          octx.beginPath();
+          octx.arc(x, y, radius * 0.8, 0, Math.PI * 2);
+          octx.fillStyle = 'rgba(255, 150, 0, 0.15)';
+          octx.fill();
+          
+          // Draw defect type label
+          const typeLabel = t[defect.type] || defect.type;
+          octx.font = 'bold 11px monospace';
+          const labelWidth = octx.measureText(typeLabel).width + 12;
+          
+          // Background for label
+          octx.fillStyle = 'rgba(255, 100, 0, 0.9)';
+          octx.fillRect(x - labelWidth/2, y - radius - 25, labelWidth, 20);
+          
+          // Arrow pointing down
+          octx.beginPath();
+          octx.moveTo(x - 6, y - radius - 5);
+          octx.lineTo(x + 6, y - radius - 5);
+          octx.lineTo(x, y - radius + 5);
+          octx.closePath();
+          octx.fillStyle = 'rgba(255, 100, 0, 0.9)';
+          octx.fill();
+          
+          // Label text
+          octx.fillStyle = 'white';
+          octx.textAlign = 'center';
+          octx.fillText(typeLabel, x, y - radius - 10);
+          octx.textAlign = 'left';
+          
+          // Number badge
+          octx.beginPath();
+          octx.arc(x + radius, y - radius, 12, 0, Math.PI * 2);
+          octx.fillStyle = 'rgba(255, 100, 0, 1)';
+          octx.fill();
+          octx.fillStyle = 'white';
+          octx.font = 'bold 12px sans-serif';
+          octx.textAlign = 'center';
+          octx.fillText((idx + 1).toString(), x + radius, y - radius + 4);
+          octx.textAlign = 'left';
+        });
+      }
     }
     
     // Draw current selection while dragging
@@ -4225,7 +4310,7 @@ const XRaySimulator = ({ onExamComplete }) => {
       octx.setLineDash([]);
     }
     
-  }, [material, thickness, kV, mA, defects, mode, showHints, markedDefects, examStarted, t, isDrawing, selectionStart, selectionEnd, brightness, contrast, offsetCorrection, gainCorrection, badPixelCorrection, noiseSeed, detectorType, iqiType, showIQI, learningFeedback, score, invertedPolarity]);
+  }, [material, thickness, kV, mA, defects, mode, showHints, markedDefects, examStarted, t, isDrawing, selectionStart, selectionEnd, brightness, contrast, offsetCorrection, gainCorrection, badPixelCorrection, noiseSeed, detectorType, iqiType, showIQI, learningFeedback, score, invertedPolarity, showMissedDefects]);
 
   // Auto-update ideal params in teaching mode when material/thickness changes
   useEffect(() => {
@@ -4243,6 +4328,7 @@ const XRaySimulator = ({ onExamComplete }) => {
     setScore(null);
     setMarkedDefects([]);
     setLearningFeedback([]);
+    setShowMissedDefects(false);
     
     if (newMode === 'teaching') {
       // Apply ideal parameters automatically
@@ -4271,6 +4357,7 @@ const XRaySimulator = ({ onExamComplete }) => {
     setExamStarted(true);
     setMarkedDefects([]);
     setLearningFeedback([]);
+    setShowMissedDefects(false);
     setScore(null);
     generateDefects();
   };
@@ -4744,6 +4831,119 @@ ID Certificato: ${user.id}-${exam.date}
                         </span>
                       </div>
                     </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Learning Mode Progress Panel */}
+          {mode === 'learning' && examStarted && (
+            <div className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-3">
+              <h3 className="text-sm font-bold text-blue-400 mb-3 flex items-center gap-2">
+                <Eye className="w-4 h-4" />
+                {t.learningProgress || 'Progresso'}
+              </h3>
+              
+              {(() => {
+                // Calculate learning stats
+                const totalDefects = defects.length;
+                const foundDefects = markedDefects.filter(m => m.matchedDefect).length;
+                const correctType = markedDefects.filter(m => m.matchedDefect && m.isCorrectType).length;
+                const wrongType = markedDefects.filter(m => m.matchedDefect && !m.isCorrectType).length;
+                const falsePositives = markedDefects.filter(m => !m.matchedDefect).length;
+                const missedDefects = totalDefects - foundDefects;
+                
+                // Get list of missed defect IDs
+                const foundDefectIds = markedDefects.filter(m => m.matchedDefect).map(m => m.matchedDefect.id);
+                const missedDefectsList = defects.filter(d => !foundDefectIds.includes(d.id));
+                
+                return (
+                  <div className="space-y-3">
+                    {/* Progress bar */}
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-400">{t.defectsFound || 'Difetti trovati'}</span>
+                        <span className="text-white font-bold">{foundDefects}/{totalDefects}</span>
+                      </div>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all"
+                          style={{ width: `${totalDefects > 0 ? (foundDefects / totalDefects) * 100 : 0}%` }}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-green-900/30 rounded p-2 text-center">
+                        <p className="text-green-400 font-bold text-lg">{correctType}</p>
+                        <p className="text-green-300">{t.correct || 'Corretti'}</p>
+                      </div>
+                      <div className="bg-yellow-900/30 rounded p-2 text-center">
+                        <p className="text-yellow-400 font-bold text-lg">{wrongType}</p>
+                        <p className="text-yellow-300">{t.wrongType || 'Tipo errato'}</p>
+                      </div>
+                      <div className="bg-red-900/30 rounded p-2 text-center">
+                        <p className="text-red-400 font-bold text-lg">{falsePositives}</p>
+                        <p className="text-red-300">{t.falsePositives || 'Falsi positivi'}</p>
+                      </div>
+                      <div className="bg-gray-700/50 rounded p-2 text-center">
+                        <p className="text-gray-300 font-bold text-lg">{missedDefects}</p>
+                        <p className="text-gray-400">{t.missed || 'Mancanti'}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Show Correction Button */}
+                    <button 
+                      onClick={() => setShowMissedDefects(!showMissedDefects)}
+                      className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded font-medium text-sm transition ${
+                        showMissedDefects 
+                          ? 'bg-orange-600 hover:bg-orange-700 text-white' 
+                          : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                      }`}
+                    >
+                      {showMissedDefects ? (
+                        <>
+                          <EyeOff className="w-4 h-4" />
+                          {t.hideCorrection || 'Nascondi Correzione'}
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-4 h-4" />
+                          {t.showCorrection || 'Mostra Correzione'}
+                        </>
+                      )}
+                    </button>
+                    
+                    {/* Missed defects list */}
+                    {showMissedDefects && missedDefectsList.length > 0 && (
+                      <div className="bg-orange-900/20 border border-orange-600/30 rounded p-2">
+                        <p className="text-xs text-orange-400 font-semibold mb-2">
+                          {t.missedDefects || 'Difetti mancanti'}:
+                        </p>
+                        <div className="space-y-1">
+                          {missedDefectsList.map((d, i) => (
+                            <div key={d.id} className="text-xs flex items-center gap-2 text-orange-300">
+                              <span className="w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold" style={{fontSize: '10px'}}>
+                                {i + 1}
+                              </span>
+                              <span>{t[d.type] || d.type}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* All found message */}
+                    {foundDefects === totalDefects && totalDefects > 0 && (
+                      <div className="bg-green-900/30 border border-green-600/50 rounded p-2 text-center">
+                        <p className="text-green-400 font-semibold text-sm flex items-center justify-center gap-2">
+                          <CheckCircle className="w-4 h-4" />
+                          {t.allDefectsFound || 'Tutti i difetti trovati!'}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 );
               })()}
