@@ -1190,26 +1190,26 @@ const LoginScreen = () => {
     const initDemoUsers = async () => {
       try {
         // Version check - increment to force re-initialization with new demo data
-        const DB_VERSION = 'v3_beta_sessions';
+        const DB_VERSION = 'v4_beta_training_time';
         const versionResult = await storage.get('db_version');
         const currentVersion = versionResult?.value;
         
         if (currentVersion !== DB_VERSION) {
           // Demo exams for testing
           const demoExams1 = [
-            { id: 'e1', date: '2026-01-05', material: 'aluminum', thickness: 10, score: 85, detected: 3, total: 4, falsePositives: 1 },
-            { id: 'e2', date: '2026-01-07', material: 'titanium', thickness: 15, score: 72, detected: 2, total: 3, falsePositives: 0 },
-            { id: 'e3', date: '2026-01-09', material: 'aluminum', thickness: 8, score: 90, detected: 4, total: 4, falsePositives: 0 }
+            { id: 'e1', date: '2026-01-05', material: 'aluminum', thickness: 10, score: 85, detected: 3, total: 4, falsePositives: 1, trainingTimeSeconds: 2850, trainingTimeFormatted: '0h 47m 30s' },
+            { id: 'e2', date: '2026-01-07', material: 'titanium', thickness: 15, score: 72, detected: 2, total: 3, falsePositives: 0, trainingTimeSeconds: 3600, trainingTimeFormatted: '1h 00m 00s' },
+            { id: 'e3', date: '2026-01-09', material: 'aluminum', thickness: 8, score: 90, detected: 4, total: 4, falsePositives: 0, trainingTimeSeconds: 5400, trainingTimeFormatted: '1h 30m 00s' }
           ];
           const demoExams2 = [
-            { id: 'e4', date: '2026-01-06', material: 'inconel', thickness: 20, score: 65, detected: 2, total: 4, falsePositives: 1 },
-            { id: 'e5', date: '2026-01-08', material: 'aluminum', thickness: 12, score: 78, detected: 3, total: 4, falsePositives: 0 }
+            { id: 'e4', date: '2026-01-06', material: 'inconel', thickness: 20, score: 65, detected: 2, total: 4, falsePositives: 1, trainingTimeSeconds: 1800, trainingTimeFormatted: '0h 30m 00s' },
+            { id: 'e5', date: '2026-01-08', material: 'aluminum', thickness: 12, score: 78, detected: 3, total: 4, falsePositives: 0, trainingTimeSeconds: 4200, trainingTimeFormatted: '1h 10m 00s' }
           ];
           const demoExams3 = [
-            { id: 'e6', date: '2026-01-04', material: 'titanium', thickness: 10, score: 55, detected: 2, total: 5, falsePositives: 2 },
-            { id: 'e7', date: '2026-01-06', material: 'aluminum', thickness: 15, score: 68, detected: 3, total: 5, falsePositives: 1 },
-            { id: 'e8', date: '2026-01-08', material: 'inconel', thickness: 25, score: 75, detected: 3, total: 4, falsePositives: 0 },
-            { id: 'e9', date: '2026-01-10', material: 'aluminum', thickness: 10, score: 82, detected: 4, total: 5, falsePositives: 0 }
+            { id: 'e6', date: '2026-01-04', material: 'titanium', thickness: 10, score: 55, detected: 2, total: 5, falsePositives: 2, trainingTimeSeconds: 900, trainingTimeFormatted: '0h 15m 00s' },
+            { id: 'e7', date: '2026-01-06', material: 'aluminum', thickness: 15, score: 68, detected: 3, total: 5, falsePositives: 1, trainingTimeSeconds: 2400, trainingTimeFormatted: '0h 40m 00s' },
+            { id: 'e8', date: '2026-01-08', material: 'inconel', thickness: 25, score: 75, detected: 3, total: 4, falsePositives: 0, trainingTimeSeconds: 3300, trainingTimeFormatted: '0h 55m 00s' },
+            { id: 'e9', date: '2026-01-10', material: 'aluminum', thickness: 10, score: 82, detected: 4, total: 5, falsePositives: 0, trainingTimeSeconds: 4800, trainingTimeFormatted: '1h 20m 00s' }
           ];
           
           const demoUsers = [
@@ -1671,7 +1671,7 @@ const CertificatesView = () => {
 const TrainerDashboard = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [stats, setStats] = useState({ totalStudents: 0, totalExams: 0, avgScore: 0 });
+  const [stats, setStats] = useState({ totalStudents: 0, totalExams: 0, avgScore: 0, totalTrainingTime: 0 });
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -1689,11 +1689,14 @@ const TrainerDashboard = () => {
         const totalExams = studentsList.reduce((sum, u) => sum + (u.exams?.length || 0), 0);
         const allScores = studentsList.flatMap(u => u.exams?.map(e => parseFloat(e.score)) || []);
         const avgScore = allScores.length > 0 ? allScores.reduce((a, b) => a + b, 0) / allScores.length : 0;
+        const totalTrainingTime = studentsList.reduce((sum, u) => 
+          sum + (u.exams?.reduce((s, e) => s + (e.trainingTimeSeconds || 0), 0) || 0), 0);
         
         setStats({
           totalStudents: studentsList.length,
           totalExams,
-          avgScore: avgScore.toFixed(1)
+          avgScore: avgScore.toFixed(1),
+          totalTrainingTime
         });
       }
     } catch (err) {
@@ -1726,186 +1729,184 @@ const TrainerDashboard = () => {
     }
   };
 
+  const formatTotalTime = (seconds) => {
+    if (!seconds) return '-';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return `${h}h ${m}m`;
+  };
+
+  const getStudentTotalTrainingTime = (student) => {
+    if (!student.exams || student.exams.length === 0) return 0;
+    return student.exams.reduce((sum, e) => sum + (e.trainingTimeSeconds || 0), 0);
+  };
+
   return (
-    <div className="p-6 space-y-6">
-      <h2 className="text-2xl font-bold text-white">{t.studentsOverview}</h2>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-blue-900 to-blue-800 p-6 rounded-lg border border-blue-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-blue-300 text-sm">{t.students}</p>
-              <p className="text-3xl font-bold text-white mt-2">{stats.totalStudents}</p>
-            </div>
-            <Users className="w-12 h-12 text-blue-400 opacity-50" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-green-900 to-green-800 p-6 rounded-lg border border-green-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-green-300 text-sm">{t.totalExams}</p>
-              <p className="text-3xl font-bold text-white mt-2">{stats.totalExams}</p>
-            </div>
-            <ClipboardCheck className="w-12 h-12 text-green-400 opacity-50" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-900 to-purple-800 p-6 rounded-lg border border-purple-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-purple-300 text-sm">{t.avgScore}</p>
-              <p className="text-3xl font-bold text-white mt-2">{stats.avgScore}%</p>
-            </div>
-            <BarChart3 className="w-12 h-12 text-purple-400 opacity-50" />
-          </div>
-        </div>
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Header fisso */}
+      <div className="p-4 border-b border-gray-700 flex-shrink-0">
+        <h2 className="text-xl font-bold text-white">{t.studentsOverview}</h2>
       </div>
 
-      {/* Students Table */}
-      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-        <div className="p-4 border-b border-gray-700">
-          <h3 className="text-lg font-semibold text-white">{t.studentProgress}</h3>
+      {/* Contenuto scrollabile */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Stats Cards - più compatte */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-gradient-to-br from-blue-900 to-blue-800 p-4 rounded-lg border border-blue-700">
+            <div className="flex items-center gap-3">
+              <Users className="w-8 h-8 text-blue-400 opacity-70" />
+              <div>
+                <p className="text-blue-300 text-xs">{t.students}</p>
+                <p className="text-2xl font-bold text-white">{stats.totalStudents}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-green-900 to-green-800 p-4 rounded-lg border border-green-700">
+            <div className="flex items-center gap-3">
+              <ClipboardCheck className="w-8 h-8 text-green-400 opacity-70" />
+              <div>
+                <p className="text-green-300 text-xs">{t.totalExams}</p>
+                <p className="text-2xl font-bold text-white">{stats.totalExams}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-purple-900 to-purple-800 p-4 rounded-lg border border-purple-700">
+            <div className="flex items-center gap-3">
+              <BarChart3 className="w-8 h-8 text-purple-400 opacity-70" />
+              <div>
+                <p className="text-purple-300 text-xs">{t.avgScore}</p>
+                <p className="text-2xl font-bold text-white">{stats.avgScore}%</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-cyan-900 to-cyan-800 p-4 rounded-lg border border-cyan-700">
+            <div className="flex items-center gap-3">
+              <Clock className="w-8 h-8 text-cyan-400 opacity-70" />
+              <div>
+                <p className="text-cyan-300 text-xs">{t.totalTrainingTime}</p>
+                <p className="text-2xl font-bold text-white">{formatTotalTime(stats.totalTrainingTime)}</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-900">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t.username}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t.email}</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">{t.exams}</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">{t.avgScore}</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">{t.lastExam}</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">{t.trend}</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-700">
-              {students.map(student => {
-                const exams = student.exams || [];
-                const scores = exams.map(e => parseFloat(e.score));
-                const avg = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '-';
-                const lastExam = exams.length > 0 ? 
-                  [...exams].sort((a, b) => new Date(b.date) - new Date(a.date))[0] : null;
-                const trend = calculateTrend(exams);
-                
-                return (
-                  <tr key={student.id} className="hover:bg-gray-750">
-                    <td className="px-4 py-3 text-sm text-white font-medium">{student.username}</td>
-                    <td className="px-4 py-3 text-sm text-gray-300">{student.email}</td>
-                    <td className="px-4 py-3 text-sm text-center text-gray-300">{exams.length}</td>
-                    <td className="px-4 py-3 text-sm text-center">
-                      <span className={`font-semibold ${
-                        avg === '-' ? 'text-gray-500' :
-                        parseFloat(avg) >= 80 ? 'text-green-400' :
-                        parseFloat(avg) >= 60 ? 'text-yellow-400' : 'text-red-400'
-                      }`}>
-                        {avg}{avg !== '-' && '%'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-center text-gray-300">
-                      {lastExam ? (
-                        <span className={parseFloat(lastExam.score) >= 80 ? 'text-green-400' : 'text-gray-300'}>
-                          {lastExam.score}% ({lastExam.date})
-                        </span>
-                      ) : (
-                        <span className="text-gray-500 italic">{t.noExams}</span>
+
+        {/* Students Table - più compatta */}
+        <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+          <div className="p-3 border-b border-gray-700 bg-gray-850">
+            <h3 className="text-sm font-semibold text-white">{t.studentProgress}</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-900">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">{t.username}</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-400 uppercase">{t.exams}</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-400 uppercase">{t.avgScore}</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-400 uppercase">
+                    <div className="flex items-center justify-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {t.trainingTime}
+                    </div>
+                  </th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-400 uppercase">{t.trend}</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-400 uppercase"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {students.map(student => {
+                  const exams = student.exams || [];
+                  const scores = exams.map(e => parseFloat(e.score));
+                  const avg = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '-';
+                  const trend = calculateTrend(exams);
+                  const totalTime = getStudentTotalTrainingTime(student);
+                  
+                  return (
+                    <React.Fragment key={student.id}>
+                      <tr className="hover:bg-gray-750 cursor-pointer" onClick={() => setSelectedStudent(selectedStudent?.id === student.id ? null : student)}>
+                        <td className="px-3 py-2">
+                          <div>
+                            <p className="text-white font-medium">{student.username}</p>
+                            <p className="text-xs text-gray-500">{student.email}</p>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-center text-gray-300">{exams.length}</td>
+                        <td className="px-3 py-2 text-center">
+                          <span className={`font-semibold ${
+                            avg === '-' ? 'text-gray-500' :
+                            parseFloat(avg) >= 80 ? 'text-green-400' :
+                            parseFloat(avg) >= 60 ? 'text-yellow-400' : 'text-red-400'
+                          }`}>
+                            {avg}{avg !== '-' && '%'}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <span className="text-cyan-400 font-medium">
+                            {formatTotalTime(totalTime)}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <div className="flex items-center justify-center">
+                            {getTrendIcon(trend)}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <span className="text-blue-400 text-xs">
+                            {selectedStudent?.id === student.id ? '▲ Chiudi' : '▼ Dettagli'}
+                          </span>
+                        </td>
+                      </tr>
+                      
+                      {/* Dettaglio studente inline */}
+                      {selectedStudent?.id === student.id && (
+                        <tr>
+                          <td colSpan="6" className="bg-gray-900 p-4">
+                            <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                              <FileText className="w-4 h-4" />
+                              {t.examHistory}
+                            </h4>
+                            {exams.length > 0 ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                                {[...exams]
+                                  .sort((a, b) => new Date(b.date) - new Date(a.date))
+                                  .map((exam, idx) => (
+                                  <div key={idx} className="bg-gray-800 rounded p-2 text-xs">
+                                    <div className="flex justify-between items-center mb-1">
+                                      <span className="text-gray-400">{exam.date}</span>
+                                      <span className={`font-bold ${
+                                        parseFloat(exam.score) >= 80 ? 'text-green-400' : 
+                                        parseFloat(exam.score) >= 60 ? 'text-yellow-400' : 'text-red-400'
+                                      }`}>
+                                        {exam.score}%
+                                      </span>
+                                    </div>
+                                    <p className="text-gray-500">{exam.material} • {exam.thickness}mm</p>
+                                    <p className="text-gray-500">Trovati: {exam.detected}/{exam.total}</p>
+                                    {exam.trainingTimeFormatted && (
+                                      <p className="text-cyan-400 flex items-center gap-1 mt-1">
+                                        <Clock className="w-3 h-3" />
+                                        {exam.trainingTimeFormatted}
+                                      </p>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-gray-500 italic text-sm">{t.noExams}</p>
+                            )}
+                          </td>
+                        </tr>
                       )}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        {getTrendIcon(trend)}
-                        <span className={`text-xs ${
-                          trend === 'improving' ? 'text-green-400' :
-                          trend === 'declining' ? 'text-red-400' : 'text-yellow-400'
-                        }`}>
-                          {t[trend]}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => setSelectedStudent(selectedStudent?.id === student.id ? null : student)}
-                        className="text-blue-400 hover:text-blue-300 text-sm"
-                      >
-                        {selectedStudent?.id === student.id ? '▲' : '▼'}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-
-      {/* Selected Student Detail */}
-      {selectedStudent && (
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">
-            {t.examHistory}: {selectedStudent.username}
-          </h3>
-          
-          {selectedStudent.exams && selectedStudent.exams.length > 0 ? (
-            <div className="space-y-4">
-              {/* Progress Chart (simple bar representation) */}
-              <div className="bg-gray-900 rounded-lg p-4">
-                <p className="text-sm text-gray-400 mb-3">Andamento punteggi:</p>
-                <div className="flex items-end gap-2 h-24">
-                  {[...selectedStudent.exams]
-                    .sort((a, b) => new Date(a.date) - new Date(b.date))
-                    .map((exam, idx) => (
-                    <div key={idx} className="flex-1 flex flex-col items-center gap-1">
-                      <div 
-                        className={`w-full rounded-t ${
-                          parseFloat(exam.score) >= 80 ? 'bg-green-500' :
-                          parseFloat(exam.score) >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                        }`}
-                        style={{ height: `${exam.score}%` }}
-                      />
-                      <span className="text-xs text-gray-400">{exam.score}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Exam List */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {[...selectedStudent.exams]
-                  .sort((a, b) => new Date(b.date) - new Date(a.date))
-                  .map((exam, idx) => (
-                  <div key={idx} className="bg-gray-900 rounded p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-sm text-gray-400">{exam.date}</span>
-                      <span className={`font-bold ${
-                        parseFloat(exam.score) >= 80 ? 'text-green-400' : 
-                        parseFloat(exam.score) >= 60 ? 'text-yellow-400' : 'text-red-400'
-                      }`}>
-                        {exam.score}%
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      {exam.material} - {exam.thickness}mm
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Trovati: {exam.detected}/{exam.total} | FP: {exam.falsePositives}
-                    </p>
-                    {exam.trainingTimeFormatted && (
-                      <p className="text-xs text-cyan-400 flex items-center gap-1 mt-1">
-                        <Clock className="w-3 h-3" />
-                        {t.trainingTime}: {exam.trainingTimeFormatted}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p className="text-gray-500 italic">{t.noExams}</p>
-          )}
-        </div>
-      )}
     </div>
   );
 };
