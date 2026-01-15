@@ -276,7 +276,39 @@ const translations = {
     showCorrection: "Show Correction",
     hideCorrection: "Hide Correction",
     missedDefects: "Missed defects",
-    allDefectsFound: "All defects found!"
+    allDefectsFound: "All defects found!",
+    // Demo & Beta
+    freeDemo: "Free Demo",
+    freeDemoDesc: "Try the simulator for 15 minutes",
+    free: "FREE",
+    betaAccess: "BETA ACCESS",
+    fullAccess: "Full simulator access",
+    betaFreeAccess: "Free Beta Access",
+    betaFreeAccessDesc: "No payment required during beta testing",
+    activating: "Activating...",
+    getAccess: "Get Access",
+    back: "Back",
+    accessGranted: "Access Granted!",
+    sessionReadyToActivate: "Your session is ready to be activated.",
+    sevenDaysToStart: "You have 7 days to start.",
+    enterEmail: "Enter your email",
+    receiveCode: "You will receive the access code",
+    // Feedback
+    feedbackCopied: "Feedback copied to clipboard!",
+    feedbackEmailTo: "Send feedback to",
+    feedbackProblemPlaceholder: "Describe the problem encountered, steps to reproduce it and expected behavior...",
+    feedbackFeaturePlaceholder: "Describe the feature you would like to see added...",
+    selectedArea: "Selected area",
+    detectedOf: "Detected",
+    thanksForUsing: "Thanks for using RT Training!",
+    chooseHowToContinue: "Choose how to continue:",
+    newSession: "New Session",
+    getAnotherTwoHours: "Get another 2 hours of access",
+    tryFreeDemo: "Try Free Demo (15 min)",
+    close: "Close",
+    // Time tracking
+    totalTimeInApp: "Total Time in App",
+    sessionStarted: "Session started"
   },
   it: {
     title: "Simulatore Radiografia Digitale RT",
@@ -512,7 +544,39 @@ const translations = {
     showCorrection: "Mostra Correzione",
     hideCorrection: "Nascondi Correzione",
     missedDefects: "Difetti mancanti",
-    allDefectsFound: "Tutti i difetti trovati!"
+    allDefectsFound: "Tutti i difetti trovati!",
+    // Demo & Beta
+    freeDemo: "Demo Gratuita",
+    freeDemoDesc: "Prova il simulatore per 15 minuti",
+    free: "GRATIS",
+    betaAccess: "ACCESSO BETA",
+    fullAccess: "Accesso completo al simulatore",
+    betaFreeAccess: "Accesso Beta Gratuito",
+    betaFreeAccessDesc: "Nessun pagamento richiesto durante il beta test",
+    activating: "Attivazione...",
+    getAccess: "Ottieni Accesso",
+    back: "Indietro",
+    accessGranted: "Accesso Attivato!",
+    sessionReadyToActivate: "La tua sessione è pronta per essere attivata.",
+    sevenDaysToStart: "Hai 7 giorni per iniziare.",
+    enterEmail: "Inserisci la tua email",
+    receiveCode: "Riceverai il codice di accesso",
+    // Feedback
+    feedbackCopied: "Feedback copiato negli appunti!",
+    feedbackEmailTo: "Invia feedback a",
+    feedbackProblemPlaceholder: "Descrivi il problema riscontrato, i passaggi per riprodurlo e il comportamento atteso...",
+    feedbackFeaturePlaceholder: "Descrivi la funzionalità che vorresti vedere aggiunta...",
+    selectedArea: "Area selezionata",
+    detectedOf: "Trovati",
+    thanksForUsing: "Grazie per aver usato RT Training!",
+    chooseHowToContinue: "Scegli come continuare:",
+    newSession: "Nuova Sessione",
+    getAnotherTwoHours: "Ottieni altre 2 ore di accesso",
+    tryFreeDemo: "Prova Demo Gratuita (15 min)",
+    close: "Chiudi",
+    // Time tracking
+    totalTimeInApp: "Tempo Totale in App",
+    sessionStarted: "Sessione iniziata"
   }
 };
 
@@ -733,6 +797,50 @@ const AuthProvider = ({ children }) => {
     setSingleSession(null);
   };
 
+  // Start free demo - 15 minutes, no registration needed
+  const startFreeDemo = async () => {
+    try {
+      const now = new Date();
+      const expiry = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes
+      
+      const demoSession = {
+        id: 'demo_' + Date.now(),
+        code: 'DEMO',
+        email: 'demo@demo.com',
+        purchaseDate: now.toISOString(),
+        activationDate: now.toISOString(),
+        expirationDate: expiry.toISOString(),
+        status: 'active',
+        durationMinutes: 15,
+        price: 0,
+        currency: 'EUR',
+        isDemo: true
+      };
+      
+      await storage.set('single_session', JSON.stringify(demoSession));
+      setSingleSession(demoSession);
+      
+      // Create temporary demo user
+      const demoUser = {
+        id: 'demo_' + Date.now(),
+        email: 'demo@demo.com',
+        username: 'Demo User',
+        role: 'student',
+        isSingleSession: true,
+        isDemo: true,
+        sessionId: demoSession.id,
+        exams: []
+      };
+      
+      await storage.set('current_user', JSON.stringify(demoUser));
+      setUser(demoUser);
+      
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -747,7 +855,8 @@ const AuthProvider = ({ children }) => {
       getSessionRemainingTime,
       isSessionActive,
       expireSingleSession,
-      clearSingleSession
+      clearSingleSession,
+      startFreeDemo
     }}>
       {children}
     </AuthContext.Provider>
@@ -836,21 +945,21 @@ const SingleSessionTimer = ({ onExpire, onWarning }) => {
 const SingleSessionPurchaseModal = ({ onClose, onPurchase }) => {
   const { t } = useLanguage();
   const [email, setEmail] = useState('');
-  const [step, setStep] = useState('info'); // info | email | payment | success
+  const [step, setStep] = useState('info'); // info | email | success
   const [loading, setLoading] = useState(false);
 
   const handlePurchase = async () => {
     if (!email) return;
     setLoading(true);
     
-    // Simulate payment processing
+    // Beta: instant access, no payment
     setTimeout(async () => {
       const result = await onPurchase(email);
       setLoading(false);
       if (result.success) {
         setStep('success');
       }
-    }, 1500);
+    }, 1000);
   };
 
   return (
@@ -877,10 +986,13 @@ const SingleSessionPurchaseModal = ({ onClose, onPurchase }) => {
         <div className="p-6">
           {step === 'info' && (
             <>
-              {/* Price */}
+              {/* Beta Badge - No Price */}
               <div className="text-center mb-6">
-                <div className="text-5xl font-bold text-white mb-1">{t.singleSessionPrice}</div>
-                <div className="text-gray-400">{t.singleSessionDuration} • una tantum</div>
+                <div className="inline-block bg-yellow-500/20 border border-yellow-500/50 rounded-full px-4 py-2 mb-3">
+                  <span className="text-yellow-400 font-bold text-sm">{t.betaAccess || 'ACCESSO BETA'}</span>
+                </div>
+                <div className="text-3xl font-bold text-white mb-1">{t.singleSessionDuration}</div>
+                <div className="text-gray-400 text-sm">{t.fullAccess || 'Accesso completo al simulatore'}</div>
               </div>
 
               {/* Features */}
@@ -908,7 +1020,7 @@ const SingleSessionPurchaseModal = ({ onClose, onPurchase }) => {
                 onClick={() => setStep('email')}
                 className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
               >
-                <ShoppingCart className="w-5 h-5" />
+                <Zap className="w-5 h-5" />
                 {t.singleSessionBuy}
               </button>
             </>
@@ -917,9 +1029,9 @@ const SingleSessionPurchaseModal = ({ onClose, onPurchase }) => {
           {step === 'email' && (
             <>
               <div className="text-center mb-6">
-                <CreditCard className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
-                <h3 className="text-lg font-semibold text-white">Inserisci la tua email</h3>
-                <p className="text-sm text-gray-400">Riceverai il codice di accesso</p>
+                <Zap className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
+                <h3 className="text-lg font-semibold text-white">{t.enterEmail || 'Inserisci la tua email'}</h3>
+                <p className="text-sm text-gray-400">{t.receiveCode || 'Riceverai il codice di accesso'}</p>
               </div>
 
               <input
@@ -930,31 +1042,26 @@ const SingleSessionPurchaseModal = ({ onClose, onPurchase }) => {
                 className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-500 mb-4"
               />
 
-              <div className="bg-gray-800 rounded-lg p-4 mb-4">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-400">Sessione Singola (2h)</span>
-                  <span className="text-white font-semibold">€9,90</span>
-                </div>
-                <div className="border-t border-gray-700 mt-2 pt-2 flex justify-between items-center">
-                  <span className="text-gray-300 font-semibold">Totale</span>
-                  <span className="text-xl text-yellow-400 font-bold">€9,90</span>
-                </div>
+              {/* Beta - No payment needed */}
+              <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-3 mb-4 text-center">
+                <p className="text-yellow-400 text-sm font-semibold">{t.betaFreeAccess || 'Accesso Beta Gratuito'}</p>
+                <p className="text-gray-400 text-xs mt-1">{t.betaFreeAccessDesc || 'Nessun pagamento richiesto durante il beta test'}</p>
               </div>
 
               <button
                 onClick={handlePurchase}
                 disabled={!email || loading}
-                className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 disabled:from-gray-600 disabled:to-gray-600 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
                     <RefreshCw className="w-5 h-5 animate-spin" />
-                    Elaborazione...
+                    {t.activating || 'Attivazione...'}
                   </>
                 ) : (
                   <>
-                    <CreditCard className="w-5 h-5" />
-                    Paga €9,90
+                    <Zap className="w-5 h-5" />
+                    {t.getAccess || 'Ottieni Accesso'}
                   </>
                 )}
               </button>
@@ -963,7 +1070,7 @@ const SingleSessionPurchaseModal = ({ onClose, onPurchase }) => {
                 onClick={() => setStep('info')}
                 className="w-full mt-3 text-gray-400 hover:text-white text-sm"
               >
-                ← Indietro
+                ← {t.back || 'Indietro'}
               </button>
             </>
           )}
@@ -973,16 +1080,16 @@ const SingleSessionPurchaseModal = ({ onClose, onPurchase }) => {
               <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Acquisto Completato!</h3>
+              <h3 className="text-xl font-bold text-white mb-2">{t.accessGranted || 'Accesso Attivato!'}</h3>
               <p className="text-gray-400 mb-6">
-                La tua sessione è pronta per essere attivata.<br />
-                Hai 7 giorni per iniziare.
+                {t.sessionReadyToActivate || 'La tua sessione è pronta per essere attivata.'}<br />
+                {t.sevenDaysToStart || 'Hai 7 giorni per iniziare.'}
               </p>
               <button
                 onClick={onClose}
                 className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition"
               >
-                Attiva Sessione
+                {t.singleSessionActivate}
               </button>
             </div>
           )}
@@ -1066,37 +1173,34 @@ const SingleSessionExpiredModal = ({ onBuyAnother, onUpgrade, onClose }) => {
 
         <div className="p-6">
           <p className="text-gray-300 text-center mb-6">
-            Grazie per aver usato RT Training! Scegli come continuare:
+            {t.thanksForUsing || 'Grazie per aver usato RT Training!'}<br/>
+            {t.chooseHowToContinue || 'Scegli come continuare:'}
           </p>
 
-          {/* Upgrade Option */}
-          <div className="bg-gradient-to-r from-green-900/50 to-green-800/50 border border-green-600 rounded-lg p-4 mb-4">
+          {/* Beta - Free sessions */}
+          <div className="bg-gradient-to-r from-yellow-900/50 to-orange-800/50 border border-yellow-600 rounded-lg p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <Star className="w-5 h-5 text-yellow-400" />
-              <span className="text-green-400 font-bold text-sm">OFFERTA SPECIALE -20%</span>
+              <Zap className="w-5 h-5 text-yellow-400" />
+              <span className="text-yellow-400 font-bold text-sm">{t.betaAccess || 'ACCESSO BETA'}</span>
             </div>
-            <h3 className="text-white font-semibold mb-1">Piano Standard</h3>
-            <p className="text-sm text-gray-400 mb-3">Accesso illimitato, storico esami, certificati</p>
-            <div className="flex items-baseline gap-2 mb-3">
-              <span className="text-2xl font-bold text-white">€15,20</span>
-              <span className="text-gray-500 line-through">€19,00</span>
-              <span className="text-gray-400">/mese</span>
-            </div>
+            <h3 className="text-white font-semibold mb-1">{t.newSession || 'Nuova Sessione'}</h3>
+            <p className="text-sm text-gray-400 mb-3">{t.getAnotherTwoHours || 'Ottieni altre 2 ore di accesso'}</p>
             <button
-              onClick={onUpgrade}
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 rounded-lg transition"
+              onClick={onBuyAnother}
+              className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 rounded-lg transition flex items-center justify-center gap-2"
             >
-              {t.singleSessionUpgrade}
+              <Zap className="w-5 h-5" />
+              {t.singleSessionBuyAnother}
             </button>
           </div>
 
-          {/* Buy Another */}
+          {/* Free Demo - 15 min */}
           <button
-            onClick={onBuyAnother}
+            onClick={onClose}
             className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2 mb-3"
           >
-            <Zap className="w-5 h-5 text-yellow-400" />
-            {t.singleSessionBuyAnother} (€9,90)
+            <Play className="w-5 h-5 text-green-400" />
+            {t.tryFreeDemo || 'Prova Demo Gratuita (15 min)'}
           </button>
 
           {/* Close */}
@@ -1104,7 +1208,7 @@ const SingleSessionExpiredModal = ({ onBuyAnother, onUpgrade, onClose }) => {
             onClick={onClose}
             className="w-full text-gray-500 hover:text-gray-300 text-sm py-2"
           >
-            Chiudi
+            {t.close || 'Chiudi'}
           </button>
         </div>
       </div>
@@ -1165,7 +1269,7 @@ const LoginScreen = () => {
   const [role, setRole] = useState('student');
   const [showSingleSessionModal, setShowSingleSessionModal] = useState(false);
   const [showActivateModal, setShowActivateModal] = useState(false);
-  const { login, register, singleSession, purchaseSingleSession, activateSingleSession } = useAuth();
+  const { login, register, singleSession, purchaseSingleSession, activateSingleSession, startFreeDemo } = useAuth();
   const { t, language, setLanguage } = useLanguage();
 
   const handleLogin = async (e) => {
@@ -1201,6 +1305,11 @@ const LoginScreen = () => {
     setShowActivateModal(false);
   };
 
+  // Start free demo - 15 minutes
+  const handleStartFreeDemo = async () => {
+    await startFreeDemo();
+  };
+
   // Check if there's a purchased session waiting to be activated
   useEffect(() => {
     if (singleSession && singleSession.status === 'purchased') {
@@ -1212,7 +1321,7 @@ const LoginScreen = () => {
     const initDemoUsers = async () => {
       try {
         // Version check - increment to force re-initialization with new demo data
-        const DB_VERSION = 'v4_beta_training_time';
+        const DB_VERSION = 'v5_beta_app_time';
         const versionResult = await storage.get('db_version');
         const currentVersion = versionResult?.value;
         
@@ -1235,11 +1344,11 @@ const LoginScreen = () => {
           ];
           
           const demoUsers = [
-            { id: '1', email: 'admin@rt.com', password: 'admin123', username: 'Admin', role: 'admin', createdAt: '2026-01-01T00:00:00.000Z', exams: [] },
-            { id: '2', email: 'trainer@rt.com', password: 'trainer123', username: 'Dr. Rossi', role: 'trainer', createdAt: '2026-01-01T00:00:00.000Z', exams: [] },
-            { id: '3', email: 'marco.bianchi@demo.com', password: 'demo123', username: 'Marco Bianchi', role: 'student', createdAt: '2026-01-03T00:00:00.000Z', exams: demoExams1 },
-            { id: '4', email: 'laura.verdi@demo.com', password: 'demo123', username: 'Laura Verdi', role: 'student', createdAt: '2026-01-04T00:00:00.000Z', exams: demoExams2 },
-            { id: '5', email: 'giuseppe.neri@demo.com', password: 'demo123', username: 'Giuseppe Neri', role: 'student', createdAt: '2026-01-02T00:00:00.000Z', exams: demoExams3 }
+            { id: '1', email: 'admin@rt.com', password: 'admin123', username: 'Admin', role: 'admin', createdAt: '2026-01-01T00:00:00.000Z', exams: [], totalAppTimeSeconds: 0 },
+            { id: '2', email: 'trainer@rt.com', password: 'trainer123', username: 'Dr. Rossi', role: 'trainer', createdAt: '2026-01-01T00:00:00.000Z', exams: [], totalAppTimeSeconds: 0 },
+            { id: '3', email: 'marco.bianchi@demo.com', password: 'demo123', username: 'Marco Bianchi', role: 'student', createdAt: '2026-01-03T00:00:00.000Z', exams: demoExams1, totalAppTimeSeconds: 7200 },
+            { id: '4', email: 'laura.verdi@demo.com', password: 'demo123', username: 'Laura Verdi', role: 'student', createdAt: '2026-01-04T00:00:00.000Z', exams: demoExams2, totalAppTimeSeconds: 3600 },
+            { id: '5', email: 'giuseppe.neri@demo.com', password: 'demo123', username: 'Giuseppe Neri', role: 'student', createdAt: '2026-01-02T00:00:00.000Z', exams: demoExams3, totalAppTimeSeconds: 10800 }
           ];
           await storage.set('users_db', JSON.stringify(demoUsers));
           await storage.set('db_version', DB_VERSION);
@@ -1283,24 +1392,49 @@ const LoginScreen = () => {
           <p className="text-gray-400 text-sm">{t.subtitle}</p>
         </div>
 
-        {/* Single Session Banner */}
-        <div 
-          onClick={() => setShowSingleSessionModal(true)}
-          className="mb-6 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border border-yellow-500/50 rounded-lg p-4 cursor-pointer hover:border-yellow-400 transition group"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-yellow-500/20 rounded-full p-2 group-hover:bg-yellow-500/30 transition">
-                <Zap className="w-5 h-5 text-yellow-400" />
+        {/* Demo and Single Session Options */}
+        <div className="space-y-3 mb-6">
+          {/* Free Demo Banner */}
+          <div 
+            onClick={() => handleStartFreeDemo()}
+            className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/50 rounded-lg p-3 cursor-pointer hover:border-green-400 transition group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-green-500/20 rounded-full p-2 group-hover:bg-green-500/30 transition">
+                  <Play className="w-4 h-4 text-green-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-sm">{t.freeDemo || 'Demo Gratuita'}</h3>
+                  <p className="text-gray-400 text-xs">{t.freeDemoDesc || 'Prova il simulatore per 15 minuti'}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-white font-semibold text-sm">{t.singleSession}</h3>
-                <p className="text-gray-400 text-xs">{t.singleSessionSubtitle}</p>
+              <div className="text-right">
+                <div className="text-green-400 font-bold text-sm">{t.free || 'GRATIS'}</div>
+                <div className="text-xs text-gray-500">15 min</div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-yellow-400 font-bold">{t.singleSessionPrice}</div>
-              <div className="text-xs text-gray-500">{t.singleSessionDuration}</div>
+          </div>
+
+          {/* Single Session Banner - Beta: no price shown */}
+          <div 
+            onClick={() => setShowSingleSessionModal(true)}
+            className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border border-yellow-500/50 rounded-lg p-3 cursor-pointer hover:border-yellow-400 transition group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-yellow-500/20 rounded-full p-2 group-hover:bg-yellow-500/30 transition">
+                  <Zap className="w-4 h-4 text-yellow-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-sm">{t.singleSession}</h3>
+                  <p className="text-gray-400 text-xs">{t.singleSessionSubtitle}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-yellow-400 font-bold text-xs">{t.betaAccess || 'ACCESSO BETA'}</div>
+                <div className="text-xs text-gray-500">{t.singleSessionDuration}</div>
+              </div>
             </div>
           </div>
         </div>
@@ -1693,11 +1827,14 @@ const CertificatesView = () => {
 const TrainerDashboard = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [stats, setStats] = useState({ totalStudents: 0, totalExams: 0, avgScore: 0, totalTrainingTime: 0 });
+  const [stats, setStats] = useState({ totalStudents: 0, totalExams: 0, avgScore: 0, totalAppTime: 0 });
   const { t } = useLanguage();
 
   useEffect(() => {
     loadStudents();
+    // Refresh every 30 seconds to update time
+    const interval = setInterval(loadStudents, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadStudents = async () => {
@@ -1711,14 +1848,14 @@ const TrainerDashboard = () => {
         const totalExams = studentsList.reduce((sum, u) => sum + (u.exams?.length || 0), 0);
         const allScores = studentsList.flatMap(u => u.exams?.map(e => parseFloat(e.score)) || []);
         const avgScore = allScores.length > 0 ? allScores.reduce((a, b) => a + b, 0) / allScores.length : 0;
-        const totalTrainingTime = studentsList.reduce((sum, u) => 
-          sum + (u.exams?.reduce((s, e) => s + (e.trainingTimeSeconds || 0), 0) || 0), 0);
+        // Use totalAppTimeSeconds for total time in app
+        const totalAppTime = studentsList.reduce((sum, u) => sum + (u.totalAppTimeSeconds || 0), 0);
         
         setStats({
           totalStudents: studentsList.length,
           totalExams,
           avgScore: avgScore.toFixed(1),
-          totalTrainingTime
+          totalAppTime
         });
       }
     } catch (err) {
@@ -1759,8 +1896,8 @@ const TrainerDashboard = () => {
   };
 
   const getStudentTotalTrainingTime = (student) => {
-    if (!student.exams || student.exams.length === 0) return 0;
-    return student.exams.reduce((sum, e) => sum + (e.trainingTimeSeconds || 0), 0);
+    // Use totalAppTimeSeconds for total time in app
+    return student.totalAppTimeSeconds || 0;
   };
 
   return (
@@ -1808,8 +1945,8 @@ const TrainerDashboard = () => {
             <div className="flex items-center gap-3">
               <Clock className="w-8 h-8 text-cyan-400 opacity-70" />
               <div>
-                <p className="text-cyan-300 text-xs">{t.totalTrainingTime}</p>
-                <p className="text-2xl font-bold text-white">{formatTotalTime(stats.totalTrainingTime)}</p>
+                <p className="text-cyan-300 text-xs">{t.totalTimeInApp || t.totalTrainingTime}</p>
+                <p className="text-2xl font-bold text-white">{formatTotalTime(stats.totalAppTime)}</p>
               </div>
             </div>
           </div>
@@ -1905,7 +2042,7 @@ const TrainerDashboard = () => {
                                       </span>
                                     </div>
                                     <p className="text-gray-500">{exam.material} • {exam.thickness}mm</p>
-                                    <p className="text-gray-500">Trovati: {exam.detected}/{exam.total}</p>
+                                    <p className="text-gray-500">{t.detectedOf}: {exam.detected}/{exam.total}</p>
                                     {exam.trainingTimeFormatted && (
                                       <p className="text-cyan-400 flex items-center gap-1 mt-1">
                                         <Clock className="w-3 h-3" />
@@ -2177,7 +2314,7 @@ const DefectTypeModal = ({ selectionArea, onConfirm, onCancel, t }) => {
         
         {selectionArea && (
           <div className="mb-4 p-3 bg-gray-700 rounded text-sm text-gray-300">
-            <p>Area selezionata: {Math.round(selectionArea.width)}×{Math.round(selectionArea.height)} px</p>
+            <p>{t.selectedArea}: {Math.round(selectionArea.width)}×{Math.round(selectionArea.height)} px</p>
           </div>
         )}
         
@@ -2233,7 +2370,7 @@ const ChangelogModal = ({ onClose, t }) => {
             'Modalità Insegnamento con parametri ottimali automatici e difetti evidenziati',
             'Modalità Apprendimento con feedback immediato (verde/rosso)',
             'Modalità Esame senza assistenza con valutazione finale',
-            'Sessione Singola: 2 ore di accesso completo a €9,90',
+            'Sessione Singola: 2 ore di accesso completo (Beta gratuito)',
             'Timer sessione singola con avvisi e offerta upgrade',
             'Contatore tempo di formazione per modalità Insegnamento e Apprendimento',
             'Tempo formazione registrato e passato al trainer con risultati esame',
@@ -2387,18 +2524,13 @@ const FeedbackModal = ({ type, onClose, t }) => {
   const [description, setDescription] = useState('');
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const [copied, setCopied] = useState(false);
   
   const FEEDBACK_EMAIL = 'rtsymulationtrainingfeedback@gmail.com';
   
-  const handleSend = () => {
-    // Create mailto link with feedback details
-    const subject = encodeURIComponent(
-      type === 'problem' 
-        ? `[RT Training Bug Report] ${new Date().toLocaleDateString()}`
-        : `[RT Training Feature Request] ${new Date().toLocaleDateString()}`
-    );
-    
-    const body = encodeURIComponent(
+  const handleSend = async () => {
+    // Create feedback text
+    const feedbackText = 
       `${type === 'problem' ? 'BUG REPORT' : 'FEATURE REQUEST'}\n` +
       `${'='.repeat(40)}\n\n` +
       `Data: ${new Date().toLocaleString()}\n` +
@@ -2407,16 +2539,32 @@ const FeedbackModal = ({ type, onClose, t }) => {
       `\n${'='.repeat(40)}\n` +
       `DESCRIZIONE:\n\n${description}\n` +
       `\n${'='.repeat(40)}\n` +
-      `Inviato da RT Training NAS 410 Beta`
-    );
+      `Inviato da RT Training NAS 410 Beta`;
     
-    // Open email client
-    window.open(`mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`, '_blank');
+    // Try to copy to clipboard
+    try {
+      await navigator.clipboard.writeText(feedbackText);
+      setCopied(true);
+    } catch (err) {
+      console.log('Clipboard not available');
+    }
+    
+    // Also try mailto as fallback
+    const subject = encodeURIComponent(
+      type === 'problem' 
+        ? `[RT Training Bug Report] ${new Date().toLocaleDateString()}`
+        : `[RT Training Feature Request] ${new Date().toLocaleDateString()}`
+    );
+    const body = encodeURIComponent(feedbackText);
+    
+    // Open email client directly
+    const mailtoUrl = `mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`;
+    window.location.href = mailtoUrl;
     
     setSent(true);
     setTimeout(() => {
       onClose();
-    }, 2000);
+    }, 3000);
   };
   
   const isProblem = type === 'problem';
@@ -2427,7 +2575,13 @@ const FeedbackModal = ({ type, onClose, t }) => {
         {sent ? (
           <div className="text-center py-8">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <p className="text-xl text-white font-semibold">{t.feedbackSent}</p>
+            <p className="text-xl text-white font-semibold mb-2">{t.feedbackSent}</p>
+            {copied && (
+              <p className="text-sm text-gray-400">{t.feedbackCopied || 'Feedback copiato negli appunti!'}</p>
+            )}
+            <p className="text-sm text-gray-400 mt-2">
+              {t.feedbackEmailTo || 'Invia a'}: <span className="text-cyan-400">{FEEDBACK_EMAIL}</span>
+            </p>
           </div>
         ) : (
           <>
@@ -2442,6 +2596,12 @@ const FeedbackModal = ({ type, onClose, t }) => {
               </h3>
             </div>
             
+            {/* Email to send to */}
+            <div className="bg-gray-900 rounded-lg p-3 mb-4 text-center">
+              <p className="text-xs text-gray-400 mb-1">{t.feedbackEmailTo || 'Invia feedback a'}:</p>
+              <p className="text-cyan-400 font-mono text-sm">{FEEDBACK_EMAIL}</p>
+            </div>
+            
             <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -2452,10 +2612,7 @@ const FeedbackModal = ({ type, onClose, t }) => {
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 resize-none"
                   rows={5}
-                  placeholder={isProblem ? 
-                    "Descrivi il problema riscontrato, i passaggi per riprodurlo e il comportamento atteso..." :
-                    "Descrivi la funzionalità che vorresti vedere aggiunta..."
-                  }
+                  placeholder={isProblem ? t.feedbackProblemPlaceholder : t.feedbackFeaturePlaceholder}
                 />
               </div>
               
@@ -2935,11 +3092,12 @@ const XRaySimulator = ({ onExamComplete }) => {
     }
   }, [detectorType]);
 
-  // Training timer - active in teaching and learning modes
+  // Training timer - always active when user is in app (tracks total time)
   useEffect(() => {
     let interval = null;
     
-    if ((mode === 'teaching' || mode === 'learning') && timerActive) {
+    // Timer always active when logged in
+    if (timerActive) {
       interval = setInterval(() => {
         setTrainingTime(prev => prev + 1);
       }, 1000);
@@ -2948,21 +3106,18 @@ const XRaySimulator = ({ onExamComplete }) => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [mode, timerActive]);
+  }, [timerActive]);
 
-  // Auto-start timer when entering teaching/learning mode
+  // Auto-start timer when component mounts (user logged in)
   useEffect(() => {
-    if (mode === 'teaching' || mode === 'learning') {
-      setTimerActive(true);
-    } else {
-      // When leaving these modes, save accumulated time
-      if (timerActive && trainingTime > 0) {
+    setTimerActive(true);
+    return () => {
+      // When leaving app, save accumulated time
+      if (trainingTime > 0) {
         setTotalTrainingTime(prev => prev + trainingTime);
-        setTrainingTime(0);
       }
-      setTimerActive(false);
-    }
-  }, [mode]);
+    };
+  }, []);
 
   // Format time as HH:MM:SS
   const formatTime = (seconds) => {
@@ -4074,9 +4229,8 @@ const XRaySimulator = ({ onExamComplete }) => {
         octx.stroke();
         octx.setLineDash([]);
         
-        // Label with yellow background
-        const typeMap = { crack: 'CRICCA', porosity: 'POROSITÀ', cluster: 'CLUSTER', inclusion: 'INCLUSIONE', cavity: 'CAVITÀ' };
-        const label = typeMap[defect.type] || defect.type.toUpperCase();
+        // Label with yellow background - use translations
+        const label = (t[defect.type] || defect.type).toUpperCase();
         const labelX = defect.x * width + 15;
         const labelY = defect.y * height - 15;
         
@@ -4138,11 +4292,10 @@ const XRaySimulator = ({ onExamComplete }) => {
         octx.stroke();
         octx.setLineDash([]);
         
-        // Etichetta del tipo di difetto
+        // Etichetta del tipo di difetto - use translations
         octx.fillStyle = 'rgba(255, 255, 255, 0.9)';
         octx.font = 'bold 10px monospace';
-        const typeMap = { crack: 'CRICCA', porosity: 'POROSITÀ', cluster: 'CLUSTER', inclusion: 'INCLUSIONE', cavity: 'CAVITÀ' };
-        octx.fillText(typeMap[defect.type] || defect.type.toUpperCase(), defect.x * width + 15, defect.y * height - 10);
+        octx.fillText((t[defect.type] || defect.type).toUpperCase(), defect.x * width + 15, defect.y * height - 10);
       });
     }
     
@@ -5627,6 +5780,36 @@ const AppContent = () => {
     // In production, this would redirect to Stripe checkout
     alert('In produzione, questo porterebbe al checkout Stripe per il piano Standard con 20% di sconto!');
   };
+
+  // Track total time in app for each user
+  useEffect(() => {
+    if (!user || user.isSingleSession) return; // Don't track for demo/single sessions
+    
+    const trackTime = async () => {
+      try {
+        const usersResult = await storage.get('users_db');
+        if (usersResult) {
+          const users = JSON.parse(usersResult.value);
+          const userIndex = users.findIndex(u => u.id === user.id);
+          if (userIndex !== -1) {
+            // Add 60 seconds to total app time
+            users[userIndex].totalAppTimeSeconds = (users[userIndex].totalAppTimeSeconds || 0) + 60;
+            await storage.set('users_db', JSON.stringify(users));
+          }
+        }
+      } catch (err) {
+        console.log('Time tracking error:', err);
+      }
+    };
+    
+    // Track time every minute
+    const interval = setInterval(trackTime, 60000);
+    
+    // Also track immediately on mount
+    trackTime();
+    
+    return () => clearInterval(interval);
+  }, [user]);
 
   return (
     <div className="h-screen bg-gray-950 text-white flex overflow-hidden">
