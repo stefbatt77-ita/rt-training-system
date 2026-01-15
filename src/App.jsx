@@ -5771,8 +5771,20 @@ const AppContent = () => {
 
   // Handle session expiration
   const handleSessionExpire = async () => {
-    await expireSingleSession();
-    setShowExpiredModal(true);
+    // For demo mode, give a grace period if user is in exam mode with a result
+    // Don't immediately block the screen
+    if (singleSession?.isDemo) {
+      // For demo, just log expiration but don't show blocking modal
+      console.log('Demo session expired');
+      // Show a non-blocking notification instead
+      setTimeout(async () => {
+        await expireSingleSession();
+        setShowExpiredModal(true);
+      }, 5000); // 5 second grace period to see exam results
+    } else {
+      await expireSingleSession();
+      setShowExpiredModal(true);
+    }
   };
 
   // Handle buying another session
