@@ -308,7 +308,11 @@ const translations = {
     close: "Close",
     // Time tracking
     totalTimeInApp: "Total Time in App",
-    sessionStarted: "Session started"
+    sessionStarted: "Session started",
+    // Login screen
+    alreadyHaveAccount: "Already have an account? Login",
+    needAccount: "Need an account? Register",
+    demoAccounts: "Demo Accounts"
   },
   it: {
     title: "Simulatore Radiografia Digitale RT",
@@ -576,7 +580,11 @@ const translations = {
     close: "Chiudi",
     // Time tracking
     totalTimeInApp: "Tempo Totale in App",
-    sessionStarted: "Sessione iniziata"
+    sessionStarted: "Sessione iniziata",
+    // Login screen
+    alreadyHaveAccount: "Hai già un account? Accedi",
+    needAccount: "Serve un account? Registrati",
+    demoAccounts: "Account Demo"
   }
 };
 
@@ -1487,12 +1495,12 @@ const LoginScreen = () => {
 
         <div className="mt-6 text-center">
           <button onClick={() => setIsRegistering(!isRegistering)} className="text-blue-400 hover:text-blue-300 text-sm">
-            {isRegistering ? 'Hai già un account? Accedi' : 'Serve un account? Registrati'}
+            {isRegistering ? t.alreadyHaveAccount : t.needAccount}
           </button>
         </div>
 
         <div className="mt-8 pt-6 border-t border-gray-700">
-          <p className="text-xs text-gray-500 text-center mb-2">Account Demo:</p>
+          <p className="text-xs text-gray-500 text-center mb-2">{t.demoAccounts}:</p>
           <div className="text-xs text-gray-400 space-y-1">
             <p>Trainer: trainer@rt.com / trainer123</p>
             <p>Studente 1: marco.bianchi@demo.com / demo123</p>
@@ -5755,7 +5763,8 @@ const AppContent = () => {
   // Handle session timer warnings
   const handleSessionWarning = (minutes) => {
     setUpsellMinutes(minutes);
-    if (minutes === 15) {
+    // Don't show upsell modal for free demo (15 min), only for full sessions
+    if (minutes === 15 && !singleSession?.isDemo) {
       setShowUpsellModal(true);
     }
   };
