@@ -4795,8 +4795,8 @@ ID Certificato: ${user.id}-${exam.date}
     // Increment session exam count for single session users
     if (user?.isSingleSession && !user?.isDemo) {
       setSessionExamCount(prev => prev + 1);
-      // Show promo modal after each exam
-      setTimeout(() => setShowPromoModal(true), 1500);
+      // Show promo modal after delay to let user see results first
+      setTimeout(() => setShowPromoModal(true), 4000);
     }
     
     if (onExamComplete) {
@@ -5981,10 +5981,10 @@ const AppContent = () => {
     setFeedbackOpen(false);
   };
   
-  // Handle exam completion - refresh dashboard and navigate to it
+  // Handle exam completion - just refresh dashboard data, stay on simulator to show results
   const handleExamComplete = () => {
-    setDashboardRefresh(prev => prev + 1); // Trigger reload
-    setView('dashboard'); // Navigate to dashboard
+    setDashboardRefresh(prev => prev + 1); // Trigger reload when user visits dashboard
+    // Don't navigate away - let user see the exam results first!
   };
 
   // Handle session timer warnings
