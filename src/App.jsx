@@ -312,7 +312,26 @@ const translations = {
     // Login screen
     alreadyHaveAccount: "Already have an account? Login",
     needAccount: "Need an account? Register",
-    demoAccounts: "Demo Accounts"
+    demoAccounts: "Demo Accounts",
+    certificateSubscriptionOnly: "Certificate available only with subscription",
+    // Demo & Single Session Restrictions
+    examDisabledDemo: "Exam mode available with full session",
+    moreMaterialsWithPro: "More materials with full session",
+    moreIqiWithPro: "Advanced IQI with full session",
+    moreDefectsWithPro: "More defect types with full session",
+    examsUsed: "Exams",
+    examLimitReached: "Exam limit reached",
+    examCompleted: "Exam Completed!",
+    examsRemaining: "Exams remaining in this session",
+    noExamsRemaining: "You have used all exams in this session",
+    withSubscription: "With subscription you get",
+    unlimitedExams: "Unlimited exams",
+    savedProgress: "Permanently saved progress",
+    downloadableCertificates: "Downloadable certificates",
+    detailedStats: "Detailed statistics",
+    continuePractice: "Continue",
+    viewPlans: "View Plans",
+    subscriptionComingSoon: "Subscriptions available after beta test!"
   },
   it: {
     title: "Simulatore Radiografia Digitale RT",
@@ -584,7 +603,26 @@ const translations = {
     // Login screen
     alreadyHaveAccount: "Hai già un account? Accedi",
     needAccount: "Serve un account? Registrati",
-    demoAccounts: "Account Demo"
+    demoAccounts: "Account Demo",
+    certificateSubscriptionOnly: "Certificato disponibile solo con abbonamento",
+    // Demo & Single Session Restrictions
+    examDisabledDemo: "Modalità Esame disponibile con sessione completa",
+    moreMaterialsWithPro: "Altri materiali con sessione completa",
+    moreIqiWithPro: "IQI avanzati con sessione completa",
+    moreDefectsWithPro: "Altri tipi di difetti con sessione completa",
+    examsUsed: "Esami",
+    examLimitReached: "Limite esami raggiunto",
+    examCompleted: "Esame Completato!",
+    examsRemaining: "Esami rimanenti in questa sessione",
+    noExamsRemaining: "Hai utilizzato tutti gli esami di questa sessione",
+    withSubscription: "Con l'abbonamento ottieni",
+    unlimitedExams: "Esami illimitati",
+    savedProgress: "Progressi salvati permanentemente",
+    downloadableCertificates: "Certificati scaricabili",
+    detailedStats: "Statistiche dettagliate",
+    continuePractice: "Continua",
+    viewPlans: "Vedi Piani",
+    subscriptionComingSoon: "Abbonamenti disponibili al termine del beta test!"
   }
 };
 
@@ -1167,11 +1205,11 @@ const SingleSessionActivateModal = ({ session, onActivate, onClose }) => {
 };
 
 // Single Session Expired/Upsell Modal
-const SingleSessionExpiredModal = ({ onBuyAnother, onUpgrade, onClose }) => {
+const SingleSessionExpiredModal = ({ onBuyAnother, onUpgrade, onClose, onStartDemo }) => {
   const { t } = useLanguage();
 
   return (
-    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[100] p-4">
       <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl border border-gray-600 max-w-md w-full overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-red-600 to-orange-600 px-6 py-4 text-center">
@@ -1204,19 +1242,19 @@ const SingleSessionExpiredModal = ({ onBuyAnother, onUpgrade, onClose }) => {
 
           {/* Free Demo - 15 min */}
           <button
-            onClick={onClose}
-            className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2 mb-3"
+            onClick={onStartDemo}
+            className="w-full bg-green-700 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2 mb-3"
           >
-            <Play className="w-5 h-5 text-green-400" />
+            <Play className="w-5 h-5" />
             {t.tryFreeDemo || 'Prova Demo Gratuita (15 min)'}
           </button>
 
-          {/* Close */}
+          {/* Logout */}
           <button
             onClick={onClose}
-            className="w-full text-gray-500 hover:text-gray-300 text-sm py-2"
+            className="w-full bg-gray-700 hover:bg-gray-600 text-gray-300 text-sm py-2 rounded-lg"
           >
-            {t.close || 'Chiudi'}
+            {t.logout || 'Esci'}
           </button>
         </div>
       </div>
@@ -1259,6 +1297,79 @@ const SingleSessionUpsellModal = ({ remainingMinutes, onUpgrade, onDismiss }) =>
               className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-2 rounded-lg transition text-sm"
             >
               Upgrade
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Subscription Promo Modal (shown after exam in single session)
+const SubscriptionPromoModal = ({ examCount, maxExams, onDismiss }) => {
+  const { t } = useLanguage();
+  const remainingExams = maxExams - examCount;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-xl border border-cyan-500/50 max-w-md w-full p-6 shadow-xl">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Star className="w-8 h-8 text-cyan-400" />
+          </div>
+          
+          <h3 className="text-xl font-bold text-white mb-2">
+            {t.examCompleted || 'Esame Completato!'}
+          </h3>
+          
+          <p className="text-gray-400 mb-4">
+            {remainingExams > 0 ? (
+              <>
+                {t.examsRemaining || 'Esami rimanenti in questa sessione'}: <span className="text-cyan-400 font-bold">{remainingExams}</span>
+              </>
+            ) : (
+              <span className="text-yellow-400">{t.noExamsRemaining || 'Hai utilizzato tutti gli esami di questa sessione'}</span>
+            )}
+          </p>
+          
+          <div className="bg-cyan-900/30 border border-cyan-600/50 rounded-lg p-4 mb-4">
+            <h4 className="text-cyan-400 font-semibold mb-2">{t.withSubscription || 'Con l\'abbonamento ottieni'}:</h4>
+            <ul className="text-sm text-gray-300 space-y-1 text-left">
+              <li className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                {t.unlimitedExams || 'Esami illimitati'}
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                {t.savedProgress || 'Progressi salvati permanentemente'}
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                {t.downloadableCertificates || 'Certificati scaricabili'}
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                {t.detailedStats || 'Statistiche dettagliate'}
+              </li>
+            </ul>
+          </div>
+          
+          <div className="flex gap-3">
+            <button
+              onClick={onDismiss}
+              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg transition"
+            >
+              {t.continuePractice || 'Continua'}
+            </button>
+            <button
+              onClick={() => {
+                alert(t.subscriptionComingSoon || 'Abbonamenti disponibili al termine del beta test!');
+                onDismiss();
+              }}
+              className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2"
+            >
+              <Star className="w-4 h-4" />
+              {t.viewPlans || 'Vedi Piani'}
             </button>
           </div>
         </div>
@@ -2312,8 +2423,13 @@ const AdminDashboard = () => {
 };
 
 // Defect Type Selector Modal
-const DefectTypeModal = ({ selectionArea, onConfirm, onCancel, t }) => {
+const DefectTypeModal = ({ selectionArea, onConfirm, onCancel, t, isDemo }) => {
   const [selectedType, setSelectedType] = useState('crack');
+  
+  // In demo mode, only 3 defect types available
+  const availableTypes = isDemo 
+    ? ['crack', 'porosity', 'inclusion'] 
+    : ['crack', 'porosity', 'cluster', 'inclusion', 'cavity'];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
@@ -2327,7 +2443,7 @@ const DefectTypeModal = ({ selectionArea, onConfirm, onCancel, t }) => {
         )}
         
         <div className="space-y-3 mb-6">
-          {['crack', 'porosity', 'cluster', 'inclusion', 'cavity'].map(type => (
+          {availableTypes.map(type => (
             <label key={type} className="flex items-center gap-3 p-3 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 transition">
               <input
                 type="radio"
@@ -2340,6 +2456,11 @@ const DefectTypeModal = ({ selectionArea, onConfirm, onCancel, t }) => {
               <span className="text-white font-medium">{t[type]}</span>
             </label>
           ))}
+          {isDemo && (
+            <div className="text-xs text-yellow-500 text-center mt-2">
+              {t.moreDefectsWithPro || 'Altri tipi di difetti con sessione completa'}
+            </div>
+          )}
         </div>
 
         <div className="flex gap-3">
@@ -2666,7 +2787,7 @@ const XRaySimulator = ({ onExamComplete }) => {
   const canvasRef = useRef(null);
   const overlayCanvasRef = useRef(null);
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, singleSession } = useAuth();
   
   // Mode: 'teaching', 'learning', 'exam'
   const [mode, setMode] = useState('teaching');
@@ -2723,6 +2844,11 @@ const XRaySimulator = ({ onExamComplete }) => {
   const [trainingTime, setTrainingTime] = useState(0); // Current session time
   const [totalTrainingTime, setTotalTrainingTime] = useState(0); // Accumulated time
   const [timerActive, setTimerActive] = useState(false);
+  
+  // Session exam count (for single session limit)
+  const [sessionExamCount, setSessionExamCount] = useState(0);
+  const [showPromoModal, setShowPromoModal] = useState(false);
+  const MAX_EXAMS_SINGLE_SESSION = 5;
   
   // Image polarity inversion
   const [invertedPolarity, setInvertedPolarity] = useState(false);
@@ -2782,7 +2908,10 @@ const XRaySimulator = ({ onExamComplete }) => {
   const generateDefects = () => {
     const numDefects = Math.floor(Math.random() * 4) + 2;
     const newDefects = [];
-    const types = ['crack', 'porosity', 'cluster', 'inclusion', 'cavity'];
+    // In demo mode, only 3 defect types available
+    const types = user?.isDemo 
+      ? ['crack', 'porosity', 'inclusion'] 
+      : ['crack', 'porosity', 'cluster', 'inclusion', 'cavity'];
     
     for (let i = 0; i < numDefects; i++) {
       const type = types[Math.floor(Math.random() * types.length)];
@@ -3327,11 +3456,19 @@ const XRaySimulator = ({ onExamComplete }) => {
     const normalizedWidth = pendingSelection.width / canvas.width;
     const normalizedHeight = pendingSelection.height / canvas.height;
     
-    // Find if selection contains a real defect
+    // Get list of already matched defect IDs
+    const alreadyMatchedIds = markedDefects
+      .filter(m => m.matchedDefect)
+      .map(m => m.matchedDefect.id);
+    
+    // Find if selection contains a real defect (not already matched)
     let matchedDefect = null;
     let isCorrectType = false;
     
     defects.forEach(defect => {
+      // Skip if this defect was already matched by another selection
+      if (alreadyMatchedIds.includes(defect.id)) return;
+      
       // Check if defect center is within selection area
       const selNormX = pendingSelection.x / canvas.width;
       const selNormY = pendingSelection.y / canvas.height;
@@ -4655,6 +4792,13 @@ ID Certificato: ${user.id}-${exam.date}
     
     setScore(examResult);
     
+    // Increment session exam count for single session users
+    if (user?.isSingleSession && !user?.isDemo) {
+      setSessionExamCount(prev => prev + 1);
+      // Show promo modal after each exam
+      setTimeout(() => setShowPromoModal(true), 1500);
+    }
+    
     if (onExamComplete) {
       onExamComplete(examResult);
     }
@@ -4685,6 +4829,7 @@ ID Certificato: ${user.id}-${exam.date}
           onConfirm={handleDefectTypeConfirm}
           onCancel={handleDefectTypeCancel}
           t={t}
+          isDemo={user?.isDemo}
         />
       )}
       
@@ -4706,14 +4851,25 @@ ID Certificato: ${user.id}-${exam.date}
             <BookOpen className="w-4 h-4" />
             <span className="hidden sm:inline">{t.learning}</span>
           </button>
-          <button 
-            onClick={() => handleModeChange('exam')} 
-            className={`flex items-center gap-2 px-3 py-2 rounded-r text-sm font-semibold transition ${mode === 'exam' ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
-            title={t.examDesc}
-          >
-            <ClipboardCheck className="w-4 h-4" />
-            <span className="hidden sm:inline">{t.exam}</span>
-          </button>
+          {user?.isDemo ? (
+            <div 
+              className="flex items-center gap-2 px-3 py-2 rounded-r text-sm font-semibold bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-600"
+              title={t.examDisabledDemo || 'Modalità Esame disponibile con sessione completa'}
+            >
+              <ClipboardCheck className="w-4 h-4" />
+              <span className="hidden sm:inline">{t.exam}</span>
+              <span className="text-xs bg-yellow-600 text-white px-1 rounded">PRO</span>
+            </div>
+          ) : (
+            <button 
+              onClick={() => handleModeChange('exam')} 
+              className={`flex items-center gap-2 px-3 py-2 rounded-r text-sm font-semibold transition ${mode === 'exam' ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+              title={t.examDesc}
+            >
+              <ClipboardCheck className="w-4 h-4" />
+              <span className="hidden sm:inline">{t.exam}</span>
+            </button>
+          )}
         </div>
         
         {/* Mode description */}
@@ -4741,12 +4897,27 @@ ID Certificato: ${user.id}-${exam.date}
         )}
 
         {mode === 'exam' && (
-          <div className="ml-auto flex gap-2">
+          <div className="ml-auto flex gap-2 items-center">
+            {/* Exam count for single session */}
+            {user?.isSingleSession && !user?.isDemo && (
+              <span className="text-xs text-gray-400 mr-2">
+                {t.examsUsed || 'Esami'}: {sessionExamCount}/{MAX_EXAMS_SINGLE_SESSION}
+              </span>
+            )}
+            
             {!examStarted ? (
-              <button onClick={startExam} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold">
-                <Play className="w-4 h-4" />
-                {t.start}
-              </button>
+              // Check if single session has reached exam limit
+              user?.isSingleSession && !user?.isDemo && sessionExamCount >= MAX_EXAMS_SINGLE_SESSION ? (
+                <div className="flex items-center gap-2 bg-gray-700 px-4 py-2 rounded text-gray-400">
+                  <AlertCircle className="w-4 h-4 text-yellow-500" />
+                  <span className="text-sm">{t.examLimitReached || 'Limite esami raggiunto'}</span>
+                </div>
+              ) : (
+                <button onClick={startExam} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold">
+                  <Play className="w-4 h-4" />
+                  {t.start}
+                </button>
+              )
             ) : !score && (
               <button onClick={evaluateExam} className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded font-semibold">
                 {t.evaluate}
@@ -4815,9 +4986,16 @@ ID Certificato: ${user.id}-${exam.date}
             >
               <option value="none">{t.iqi_none}</option>
               <option value="iso">{t.iqi_iso}</option>
-              <option value="astm">{t.iqi_astm}</option>
-              <option value="duplex">{t.iqi_duplex}</option>
+              {!user?.isDemo && (
+                <>
+                  <option value="astm">{t.iqi_astm}</option>
+                  <option value="duplex">{t.iqi_duplex}</option>
+                </>
+              )}
             </select>
+            {user?.isDemo && (
+              <p className="text-xs text-yellow-500 mt-1">{t.moreIqiWithPro || 'IQI avanzati con sessione completa'}</p>
+            )}
             {iqiType !== 'none' && (
               <div className="mt-2 p-2 bg-gray-800 rounded text-xs space-y-1">
                 {iqiType === 'iso' && (() => {
@@ -4886,8 +5064,13 @@ ID Certificato: ${user.id}-${exam.date}
             <select value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full bg-gray-800 rounded px-3 py-2 text-white border border-gray-700" disabled={examStarted}>
               <option value="aluminum">{t.aluminium}</option>
               <option value="titanium">{t.titanium}</option>
-              <option value="inconel">{t.inconel}</option>
+              {!user?.isDemo && (
+                <option value="inconel">{t.inconel}</option>
+              )}
             </select>
+            {user?.isDemo && (
+              <p className="text-xs text-yellow-500 mt-1">{t.moreMaterialsWithPro || 'Altri materiali con sessione completa'}</p>
+            )}
           </div>
 
           <div>
@@ -4929,8 +5112,8 @@ ID Certificato: ${user.id}-${exam.date}
             {t.newComponent}
           </button>
 
-          {/* Show Ideal Parameters Toggle - only in learning mode */}
-          {mode === 'learning' && (
+          {/* Show Ideal Parameters Toggle - only in learning mode, not in demo */}
+          {mode === 'learning' && !user?.isDemo && (
             <label className="flex items-center gap-2 cursor-pointer">
               <input 
                 type="checkbox" 
@@ -4940,6 +5123,13 @@ ID Certificato: ${user.id}-${exam.date}
               />
               <span className="text-sm text-yellow-400">{t.showIdealParams}</span>
             </label>
+          )}
+          {mode === 'learning' && user?.isDemo && (
+            <div className="flex items-center gap-2 text-gray-500 cursor-not-allowed">
+              <input type="checkbox" disabled className="w-4 h-4" />
+              <span className="text-sm">{t.showIdealParams}</span>
+              <span className="text-xs bg-yellow-600 text-white px-1 rounded">PRO</span>
+            </div>
           )}
 
           {/* Ideal Parameters Panel */}
@@ -5367,16 +5557,32 @@ ID Certificato: ${user.id}-${exam.date}
                   <p className="text-xs text-gray-400 mt-1">Classificazione: {score.classificationAccuracy}%</p>
                 </div>
                 {parseFloat(score.score) >= 80 && (
-                  <button onClick={() => generateCertificate(user, score)} className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded">
-                    <Download className="w-4 h-4" />
-                    {t.download}
-                  </button>
+                  user.isSingleSession ? (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-gray-600 rounded text-gray-300 text-sm">
+                      <Award className="w-4 h-4" />
+                      {t.certificateSubscriptionOnly || 'Certificato disponibile solo con abbonamento'}
+                    </div>
+                  ) : (
+                    <button onClick={() => generateCertificate(user, score)} className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded">
+                      <Download className="w-4 h-4" />
+                      {t.download}
+                    </button>
+                  )
                 )}
               </div>
             </div>
           )}
         </div>
       </div>
+      
+      {/* Subscription Promo Modal - shown after exam in single session */}
+      {showPromoModal && (
+        <SubscriptionPromoModal
+          examCount={sessionExamCount}
+          maxExams={MAX_EXAMS_SINGLE_SESSION}
+          onDismiss={() => setShowPromoModal(false)}
+        />
+      )}
     </div>
   );
 };
@@ -5712,9 +5918,15 @@ ID Certificato: ${user.id}-${exam.date}
                     <span className="hidden sm:inline">{t.reviewExam}</span>
                   </button>
                   {parseFloat(exam.score) >= 80 && (
-                    <button onClick={() => generateCertificate(exam)} className="px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded text-sm flex items-center gap-1">
-                      <Download className="w-4 h-4" />
-                    </button>
+                    user.isSingleSession ? (
+                      <div className="px-3 py-1 bg-gray-600 rounded text-sm flex items-center gap-1 text-gray-300" title={t.certificateSubscriptionOnly}>
+                        <Award className="w-4 h-4" />
+                      </div>
+                    ) : (
+                      <button onClick={() => generateCertificate(exam)} className="px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded text-sm flex items-center gap-1">
+                        <Download className="w-4 h-4" />
+                      </button>
+                    )
                   )}
                 </div>
               </div>
@@ -5746,8 +5958,23 @@ const AppContent = () => {
   const [showUpsellModal, setShowUpsellModal] = useState(false);
   const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [upsellMinutes, setUpsellMinutes] = useState(15);
-  const { user, logout, isSessionActive, expireSingleSession, clearSingleSession, purchaseSingleSession } = useAuth();
+  const { user, logout, isSessionActive, expireSingleSession, clearSingleSession, purchaseSingleSession, singleSession, getSessionRemainingTime, startFreeDemo } = useAuth();
   const { t, language, setLanguage } = useLanguage();
+  
+  // Check for session expiration periodically
+  useEffect(() => {
+    if (!user?.isSingleSession || !singleSession) return;
+    
+    const checkExpiration = setInterval(() => {
+      const remaining = getSessionRemainingTime();
+      if (remaining !== null && remaining <= 0 && !showExpiredModal) {
+        expireSingleSession();
+        setShowExpiredModal(true);
+      }
+    }, 1000);
+    
+    return () => clearInterval(checkExpiration);
+  }, [user, singleSession, showExpiredModal]);
   
   const openFeedback = (type) => {
     setFeedbackType(type);
@@ -5771,20 +5998,8 @@ const AppContent = () => {
 
   // Handle session expiration
   const handleSessionExpire = async () => {
-    // For demo mode, give a grace period if user is in exam mode with a result
-    // Don't immediately block the screen
-    if (singleSession?.isDemo) {
-      // For demo, just log expiration but don't show blocking modal
-      console.log('Demo session expired');
-      // Show a non-blocking notification instead
-      setTimeout(async () => {
-        await expireSingleSession();
-        setShowExpiredModal(true);
-      }, 5000); // 5 second grace period to see exam results
-    } else {
-      await expireSingleSession();
-      setShowExpiredModal(true);
-    }
+    await expireSingleSession();
+    setShowExpiredModal(true);
   };
 
   // Handle buying another session
@@ -5856,6 +6071,11 @@ const AppContent = () => {
         <SingleSessionExpiredModal 
           onBuyAnother={handleBuyAnother}
           onUpgrade={handleUpgrade}
+          onStartDemo={async () => {
+            setShowExpiredModal(false);
+            await clearSingleSession();
+            await startFreeDemo();
+          }}
           onClose={async () => {
             setShowExpiredModal(false);
             await clearSingleSession();
