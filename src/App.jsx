@@ -16,7 +16,7 @@
  * This software is protected by copyright law and international treaties.
  * Violators will be prosecuted to the maximum extent possible under the law.
  * 
- * Contact: rttraining.contact@gmail.com
+ * Contact: rtsymulationtrainingfeedback@gmail.com
  * 
  * Version: 1.0.0-beta
  * Build Date: January 2026
@@ -33,7 +33,7 @@ const COMPANY_LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADGCAIA
 const CURRENT_YEAR = new Date().getFullYear();
 const COPYRIGHT_OWNER = "Stefano Battisti - RT Training";
 const COPYRIGHT_TEXT = `© ${CURRENT_YEAR} ${COPYRIGHT_OWNER}. All rights reserved.`;
-const CONTACT_EMAIL = "rttraining.contact@gmail.com";
+const CONTACT_EMAIL = "rtsymulationtrainingfeedback@gmail.com";
 const APP_VERSION = "1.0.0-beta";
 
 // Storage Helper
