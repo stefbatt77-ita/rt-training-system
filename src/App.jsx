@@ -1,12 +1,40 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * RT TRAINING NAS 410 - Digital Radiography Training System
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
+ * Copyright © 2024-2026 Stefano Battisti - RT Training. All Rights Reserved.
+ * 
+ * PROPRIETARY AND CONFIDENTIAL
+ * 
+ * This software and its documentation are proprietary to Stefano Battisti.
+ * Unauthorized copying, modification, distribution, reverse engineering, 
+ * decompilation, or any other use of this software, in whole or in part, 
+ * without the express written permission of the copyright holder is 
+ * strictly prohibited.
+ * 
+ * This software is protected by copyright law and international treaties.
+ * Violators will be prosecuted to the maximum extent possible under the law.
+ * 
+ * Contact: rttraining.contact@gmail.com
+ * 
+ * Version: 1.0.0-beta
+ * Build Date: January 2026
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
-import { Camera, ZoomIn, ZoomOut, Maximize2, Filter, RefreshCw, Play, BookOpen, ClipboardCheck, ChevronDown, ChevronUp, Eye, EyeOff, Undo, Redo, MousePointer, Ruler, Circle, Square, BarChart3, TrendingUp, Layers, LogOut, Users, Award, Download, Settings, Globe, Menu, X, FileText, CheckCircle, AlertCircle, Trash2, MessageSquare, Bug, Lightbulb, Send, RotateCcw, Clock, CreditCard, Zap, Timer, ShoppingCart, Gift, Star } from 'lucide-react';
+import { Camera, ZoomIn, ZoomOut, Maximize2, Filter, RefreshCw, Play, BookOpen, ClipboardCheck, ChevronDown, ChevronUp, Eye, EyeOff, Undo, Redo, MousePointer, Ruler, Circle, Square, BarChart3, TrendingUp, Layers, LogOut, Users, Award, Download, Settings, Globe, Menu, X, FileText, CheckCircle, AlertCircle, Trash2, MessageSquare, Bug, Lightbulb, Send, RotateCcw, Clock, CreditCard, Zap, Timer, ShoppingCart, Gift, Star, Shield, Scale } from 'lucide-react';
 
 // Company Logo (Base64)
 const COMPANY_LOGO = "data:image/png;base64,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";
 
-// Copyright info
+// Copyright and Legal Info
 const CURRENT_YEAR = new Date().getFullYear();
-const COPYRIGHT_TEXT = `© ${CURRENT_YEAR} RT Training System. All rights reserved.`;
+const COPYRIGHT_OWNER = "Stefano Battisti - RT Training";
+const COPYRIGHT_TEXT = `© ${CURRENT_YEAR} ${COPYRIGHT_OWNER}. All rights reserved.`;
+const CONTACT_EMAIL = "rttraining.contact@gmail.com";
+const APP_VERSION = "1.0.0-beta";
 
 // Storage Helper
 const storage = {
@@ -331,7 +359,11 @@ const translations = {
     detailedStats: "Detailed statistics",
     continuePractice: "Continue",
     viewPlans: "View Plans",
-    subscriptionComingSoon: "Subscriptions available after beta test!"
+    subscriptionComingSoon: "Subscriptions available after beta test!",
+    // Terms of Service
+    termsOfService: "Terms of Service",
+    acceptTerms: "I Accept the Terms",
+    decline: "Decline"
   },
   it: {
     title: "Simulatore Radiografia Digitale RT",
@@ -622,7 +654,11 @@ const translations = {
     detailedStats: "Statistiche dettagliate",
     continuePractice: "Continua",
     viewPlans: "Vedi Piani",
-    subscriptionComingSoon: "Abbonamenti disponibili al termine del beta test!"
+    subscriptionComingSoon: "Abbonamenti disponibili al termine del beta test!",
+    // Terms of Service
+    termsOfService: "Termini di Servizio",
+    acceptTerms: "Accetto i Termini",
+    decline: "Rifiuta"
   }
 };
 
@@ -1388,6 +1424,7 @@ const LoginScreen = () => {
   const [role, setRole] = useState('student');
   const [showSingleSessionModal, setShowSingleSessionModal] = useState(false);
   const [showActivateModal, setShowActivateModal] = useState(false);
+  const [showTosModal, setShowTosModal] = useState(false);
   const { login, register, singleSession, purchaseSingleSession, activateSingleSession, startFreeDemo } = useAuth();
   const { t, language, setLanguage } = useLanguage();
 
@@ -1622,12 +1659,23 @@ const LoginScreen = () => {
         
         <div className="mt-6 pt-4 border-t border-gray-700">
           <p className="text-xs text-gray-500 text-center">{COPYRIGHT_TEXT}</p>
+          <button 
+            onClick={() => setShowTosModal(true)}
+            className="text-xs text-cyan-400 hover:text-cyan-300 underline block mx-auto mt-2"
+          >
+            {t.termsOfService || 'Termini di Servizio'}
+          </button>
           <div className="mt-3 p-2 bg-yellow-900/30 border border-yellow-700/50 rounded text-center">
             <p className="text-xs text-yellow-400 font-semibold">{t.certificateDisclaimer1}</p>
             <p className="text-xs text-yellow-600">{t.certificateDisclaimer2}</p>
           </div>
         </div>
       </div>
+      
+      {/* Terms of Service Modal */}
+      {showTosModal && (
+        <TermsOfServiceModal onClose={() => setShowTosModal(false)} />
+      )}
     </div>
   );
 };
@@ -2642,6 +2690,204 @@ const ChangelogModal = ({ onClose, t }) => {
           >
             Chiudi
           </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TERMS OF SERVICE MODAL
+// ═══════════════════════════════════════════════════════════════════════════
+const TermsOfServiceModal = ({ onClose, onAccept, showAcceptButton = false }) => {
+  const { t } = useLanguage();
+  
+  return (
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[200] p-4">
+      <div className="bg-gray-900 rounded-xl border border-gray-700 max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-900 to-purple-900 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Scale className="w-6 h-6 text-white" />
+            <h2 className="text-xl font-bold text-white">{t.termsOfService || 'Termini di Servizio'}</h2>
+          </div>
+          <button onClick={onClose} className="text-white/70 hover:text-white">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6 text-gray-300 text-sm space-y-4">
+          <div className="bg-blue-900/30 border border-blue-700/50 rounded-lg p-4 mb-4">
+            <p className="text-blue-300 font-semibold">
+              RT Training NAS 410 - Versione {APP_VERSION}
+            </p>
+            <p className="text-blue-400 text-xs mt-1">
+              Ultimo aggiornamento: Gennaio 2026
+            </p>
+          </div>
+          
+          <section>
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <span className="bg-cyan-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
+              Accettazione dei Termini
+            </h3>
+            <p>
+              Utilizzando RT Training NAS 410 ("il Software"), l'utente accetta di essere vincolato dai presenti 
+              Termini di Servizio. Se non si accettano questi termini, non è consentito utilizzare il Software.
+            </p>
+          </section>
+          
+          <section>
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <span className="bg-cyan-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
+              Proprietà Intellettuale
+            </h3>
+            <p>
+              Il Software, inclusi ma non limitati a codice sorgente, design, grafica, algoritmi, documentazione 
+              e contenuti, è di proprietà esclusiva di <strong className="text-white">{COPYRIGHT_OWNER}</strong> ed è 
+              protetto dalle leggi sul copyright italiane, europee e internazionali.
+            </p>
+            <ul className="list-disc list-inside mt-2 space-y-1 text-gray-400">
+              <li>È vietata la copia, modifica o distribuzione del Software</li>
+              <li>È vietato il reverse engineering, decompilazione o disassemblaggio</li>
+              <li>È vietata la rimozione di notice di copyright o marchi</li>
+              <li>È vietato l'uso per sviluppare prodotti concorrenti</li>
+            </ul>
+          </section>
+          
+          <section>
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <span className="bg-cyan-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
+              Licenza d'Uso
+            </h3>
+            <p>
+              Viene concessa una licenza limitata, non esclusiva, non trasferibile e revocabile per utilizzare 
+              il Software esclusivamente per scopi di formazione personale o aziendale interna, secondo il piano 
+              di abbonamento sottoscritto.
+            </p>
+          </section>
+          
+          <section>
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <span className="bg-cyan-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">4</span>
+              Limitazioni d'Uso - Beta Test
+            </h3>
+            <p>
+              Questa versione Beta è fornita esclusivamente per scopi di test e valutazione. 
+              L'utente Beta accetta di:
+            </p>
+            <ul className="list-disc list-inside mt-2 space-y-1 text-gray-400">
+              <li>Non condividere il Software con terze parti senza autorizzazione scritta</li>
+              <li>Fornire feedback costruttivo per migliorare il prodotto</li>
+              <li>Non utilizzare il Software per certificazioni ufficiali</li>
+              <li>Segnalare eventuali bug o vulnerabilità riscontrate</li>
+            </ul>
+          </section>
+          
+          <section>
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <span className="bg-cyan-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">5</span>
+              Disclaimer sui Certificati
+            </h3>
+            <div className="bg-yellow-900/30 border border-yellow-700/50 rounded-lg p-3">
+              <p className="text-yellow-300">
+                <strong>IMPORTANTE:</strong> I certificati generati da questo Software hanno valore 
+                esclusivamente formativo e dimostrativo. NON sostituiscono in alcun modo le certificazioni 
+                ufficiali rilasciate da enti accreditati secondo lo standard NAS 410 o equivalenti.
+              </p>
+            </div>
+          </section>
+          
+          <section>
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <span className="bg-cyan-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">6</span>
+              Limitazione di Responsabilità
+            </h3>
+            <p>
+              Il Software viene fornito "così com'è" senza garanzie di alcun tipo. {COPYRIGHT_OWNER} non sarà 
+              responsabile per danni diretti, indiretti, incidentali o consequenziali derivanti dall'uso 
+              o dall'impossibilità di utilizzare il Software.
+            </p>
+          </section>
+          
+          <section>
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <span className="bg-cyan-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">7</span>
+              Privacy e Dati
+            </h3>
+            <p>
+              I dati inseriti dall'utente (email, risultati esami) sono conservati localmente nel browser 
+              e non vengono trasmessi a server esterni, ad eccezione delle funzionalità che lo richiedono 
+              esplicitamente. Per maggiori informazioni, contattare: <span className="text-cyan-400">{CONTACT_EMAIL}</span>
+            </p>
+          </section>
+          
+          <section>
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <span className="bg-cyan-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">8</span>
+              Modifiche ai Termini
+            </h3>
+            <p>
+              {COPYRIGHT_OWNER} si riserva il diritto di modificare questi Termini in qualsiasi momento. 
+              L'uso continuato del Software dopo tali modifiche costituisce accettazione dei nuovi Termini.
+            </p>
+          </section>
+          
+          <section>
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <span className="bg-cyan-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">9</span>
+              Legge Applicabile
+            </h3>
+            <p>
+              Questi Termini sono regolati dalla legge italiana. Per qualsiasi controversia sarà competente 
+              il Foro di Bologna, Italia.
+            </p>
+          </section>
+          
+          <section className="border-t border-gray-700 pt-4 mt-6">
+            <h3 className="text-lg font-bold text-white mb-2">Contatti</h3>
+            <p>
+              Per domande sui presenti Termini di Servizio o sul Software:
+            </p>
+            <div className="bg-gray-800 rounded-lg p-3 mt-2">
+              <p className="text-white font-semibold">{COPYRIGHT_OWNER}</p>
+              <p className="text-cyan-400">{CONTACT_EMAIL}</p>
+            </div>
+          </section>
+        </div>
+        
+        {/* Footer */}
+        <div className="border-t border-gray-700 px-6 py-4 bg-gray-800">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-gray-500">{COPYRIGHT_TEXT}</p>
+            <div className="flex gap-3">
+              {showAcceptButton ? (
+                <>
+                  <button
+                    onClick={onClose}
+                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition"
+                  >
+                    {t.decline || 'Rifiuta'}
+                  </button>
+                  <button
+                    onClick={onAccept}
+                    className="px-6 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 rounded-lg text-white font-semibold transition flex items-center gap-2"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    {t.acceptTerms || 'Accetto i Termini'}
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={onClose}
+                  className="px-6 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 rounded-lg text-white font-semibold transition"
+                >
+                  {t.close || 'Chiudi'}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -5954,6 +6200,7 @@ const AppContent = () => {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackType, setFeedbackType] = useState(null);
   const [changelogOpen, setChangelogOpen] = useState(false);
+  const [showTosModal, setShowTosModal] = useState(false);
   const [dashboardRefresh, setDashboardRefresh] = useState(0); // Trigger dashboard reload
   const [showUpsellModal, setShowUpsellModal] = useState(false);
   const [showExpiredModal, setShowExpiredModal] = useState(false);
@@ -6099,6 +6346,10 @@ const AppContent = () => {
         />
       )}
       
+      {showTosModal && (
+        <TermsOfServiceModal onClose={() => setShowTosModal(false)} />
+      )}
+      
       <div className={`${sidebarOpen ? 'w-64' : 'w-0'} bg-gray-900 border-r border-gray-700 transition-all duration-300 overflow-hidden flex flex-col`}>
         <div className="p-4 border-b border-gray-700">
           <div className="flex items-center gap-3 mb-2">
@@ -6177,6 +6428,12 @@ const AppContent = () => {
             <p className="text-xs text-yellow-700 text-center">{t.certificateDisclaimer2}</p>
           </div>
           <p className="text-xs text-gray-600 text-center mt-2">{COPYRIGHT_TEXT}</p>
+          <button 
+            onClick={() => setShowTosModal(true)}
+            className="text-xs text-cyan-500 hover:text-cyan-400 underline block mx-auto mt-1"
+          >
+            {t.termsOfService || 'Termini di Servizio'}
+          </button>
         </div>
       </div>
 
