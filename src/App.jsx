@@ -3278,10 +3278,10 @@ const XRaySimulator = ({ onExamComplete }) => {
         : ['crack', 'porosity', 'cluster', 'inclusion', 'cavity'];
     }
     
-    // Weld zone parameters (normalized 0-1)
+    // Weld zone parameters (normalized 0-1) - match rendering dimensions
     const weldCenterX = 0.5; // Centro della saldatura
-    const weldWidth = 0.08; // Larghezza cordone (~8% della piastra)
-    const hazWidth = 0.06; // Larghezza ZTA per lato (~6%)
+    const weldWidth = 0.075; // Larghezza cordone (~7.5% della piastra)
+    const hazWidth = 0.055; // Larghezza ZTA per lato (~5.5%)
     
     for (let i = 0; i < numDefects; i++) {
       const type = types[Math.floor(Math.random() * types.length)];
@@ -4191,24 +4191,84 @@ const XRaySimulator = ({ onExamComplete }) => {
         const edgeFactor = 1 + 0.3 * Math.pow(Math.abs(nx - 0.5) * 2, 2);
         let localThickness = thickness * edgeFactor;
         
-        // Weld zone rendering (visual appearance of weld bead and HAZ)
+        // Weld zone rendering (realistic appearance of weld bead and HAZ)
         let weldFactor = 1;
         if (specimenType === 'weld') {
           const weldCenterX = 0.5;
-          const weldWidth = 0.08;
-          const hazWidth = 0.06;
+          const weldWidthBase = 0.075; // Base width of weld bead
+          const hazWidth = 0.055;
+          const reinforcementHeight = 0.15; // 15% extra thickness at weld crown
+          
+          // Create irregular weld bead edges using sine waves
+          // This simulates the wavy edges of a real weld
+          const edgeIrregularity = 0.008 * Math.sin(ny * 45 + noiseSeed * 0.001) 
+                                 + 0.005 * Math.sin(ny * 78 + noiseSeed * 0.002)
+                                 + 0.003 * Math.sin(ny * 120 + noiseSeed * 0.003);
+          
+          const weldWidth = weldWidthBase + edgeIrregularity;
           const distFromCenter = Math.abs(nx - weldCenterX);
           
+          // Ripple pattern - simulates the "fish scale" or "stacked dimes" appearance
+          // from the welder's torch movement
+          const rippleFrequency = 85; // Controls spacing between ripples
+          const rippleAmplitude = 0.03; // Intensity of ripple effect
+          const ripplePhase = noiseSeed * 0.0001;
+          const ripplePattern = Math.sin(ny * rippleFrequency + ripplePhase) * 
+                               Math.cos(ny * rippleFrequency * 0.3 + ripplePhase * 2);
+          
+          // Secondary ripple for more complexity
+          const secondaryRipple = Math.sin(ny * rippleFrequency * 1.7 + ripplePhase * 3) * 0.5;
+          
           if (distFromCenter < weldWidth / 2) {
-            // Inside weld bead - slightly different density (usually slightly darker due to different grain structure)
-            const weldIntensity = 1 - (distFromCenter / (weldWidth / 2));
-            weldFactor = 1 - 0.05 * weldIntensity; // 5% darker at center
-            // Add slight texture variation for weld bead
-            localThickness *= (1 + 0.02 * Math.sin(ny * 50) * Math.cos(nx * 30));
+            // Inside weld bead - MORE material = MORE absorption = BRIGHTER (whiter)
+            const normalizedDist = distFromCenter / (weldWidth / 2);
+            
+            // Weld crown profile - parabolic shape (highest in center)
+            const crownProfile = 1 - Math.pow(normalizedDist, 1.8);
+            
+            // Calculate extra thickness from weld reinforcement
+            const extraThickness = reinforcementHeight * crownProfile;
+            
+            // Apply ripple texture (stronger in center, fading to edges)
+            const rippleIntensity = crownProfile * rippleAmplitude * (ripplePattern + secondaryRipple * 0.4);
+            
+            // Grain structure variation in weld metal
+            const grainVariation = 0.015 * Math.sin(nx * 200 + ny * 180 + noiseSeed) 
+                                 * Math.cos(nx * 150 - ny * 120);
+            
+            // Combined weld factor: brighter due to extra thickness + texture
+            weldFactor = 1 + extraThickness + rippleIntensity + grainVariation;
+            
+            // Add slight centerline effect (root of weld sometimes visible)
+            if (normalizedDist < 0.15) {
+              const centerlineEffect = (0.15 - normalizedDist) / 0.15;
+              weldFactor += 0.02 * centerlineEffect * Math.sin(ny * 30 + noiseSeed);
+            }
+            
           } else if (distFromCenter < weldWidth / 2 + hazWidth) {
-            // In HAZ - gradual transition
+            // Heat Affected Zone (HAZ) - slight grain structure change
             const hazPos = (distFromCenter - weldWidth / 2) / hazWidth;
-            weldFactor = 1 - 0.02 * (1 - hazPos); // Gradual transition
+            
+            // HAZ has slightly different density due to heat treatment effect
+            const hazDensityChange = 0.02 * (1 - hazPos) * (1 + 0.3 * Math.sin(ny * 60));
+            
+            // Gradual transition from weld to base metal
+            weldFactor = 1 + hazDensityChange;
+            
+            // Occasional spatter/splash marks near weld toe
+            const spatterChance = rand();
+            if (spatterChance < 0.003 && hazPos < 0.4) {
+              // Small bright spots (spatter)
+              weldFactor += 0.08 * (1 - hazPos);
+            }
+          }
+          
+          // Add occasional undercut simulation at weld toe (if no explicit undercut defect)
+          const weldToePos = weldWidth / 2;
+          if (Math.abs(distFromCenter - weldToePos) < 0.005) {
+            // Slight darkening at weld toe (common in real welds)
+            const toeEffect = 1 - Math.abs(distFromCenter - weldToePos) / 0.005;
+            weldFactor -= 0.015 * toeEffect * (0.5 + 0.5 * Math.sin(ny * 40));
           }
         }
         
@@ -5019,8 +5079,8 @@ const XRaySimulator = ({ onExamComplete }) => {
     // Draw weld zone overlay when specimen is a welded joint
     if (specimenType === 'weld' && mode === 'teaching') {
       const weldCenterX = 0.5;
-      const weldWidth = 0.08;
-      const hazWidth = 0.06;
+      const weldWidth = 0.075; // Match rendering dimensions
+      const hazWidth = 0.055;
       
       // Draw HAZ zones (subtle orange)
       octx.fillStyle = 'rgba(255, 150, 50, 0.1)';
