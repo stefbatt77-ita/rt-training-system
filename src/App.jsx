@@ -18,13 +18,13 @@
  * 
  * Contact: rtsymulationtrainingfeedback@gmail.com
  * 
- * Version: 1.0.0-beta
+ * Version: 2.0.0-beta
  * Build Date: January 2026
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
-import { Camera, ZoomIn, ZoomOut, Maximize2, Filter, RefreshCw, Play, BookOpen, ClipboardCheck, ChevronDown, ChevronUp, Eye, EyeOff, Undo, Redo, MousePointer, Ruler, Circle, Square, BarChart3, TrendingUp, Layers, LogOut, Users, Award, Download, Settings, Globe, Menu, X, FileText, CheckCircle, AlertCircle, Trash2, MessageSquare, Bug, Lightbulb, Send, RotateCcw, Clock, CreditCard, Zap, Timer, ShoppingCart, Gift, Star, Shield, Scale } from 'lucide-react';
+import { Camera, ZoomIn, ZoomOut, Maximize2, Filter, RefreshCw, Play, BookOpen, ClipboardCheck, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Eye, EyeOff, Undo, Redo, MousePointer, Ruler, Circle, Square, BarChart3, TrendingUp, Layers, LogOut, Users, Award, Download, Settings, Globe, Menu, X, FileText, CheckCircle, AlertCircle, Trash2, MessageSquare, Bug, Lightbulb, Send, RotateCcw, Clock, CreditCard, Zap, Timer, ShoppingCart, Gift, Star, Shield, Scale } from 'lucide-react';
 
 // Company Logo (Base64)
 const COMPANY_LOGO = "data:image/png;base64,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";
@@ -34,7 +34,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 const COPYRIGHT_OWNER = "Stefano Battisti - RT Training";
 const COPYRIGHT_TEXT = `© ${CURRENT_YEAR} ${COPYRIGHT_OWNER}. All rights reserved.`;
 const CONTACT_EMAIL = "rtsymulationtrainingfeedback@gmail.com";
-const APP_VERSION = "1.0.0-beta";
+const APP_VERSION = "2.0.0-beta";
 
 // Storage Helper
 const storage = {
@@ -72,7 +72,7 @@ const LanguageContext = createContext();
 const translations = {
   en: {
     title: "Digital Radiography RT Simulator",
-    subtitle: "NAS 410 Training System - Level 1 & 2",
+    subtitle: "NAS 410 / EN4179 / ISO 9712 Training System - Level 1 & 2",
     login: "Login",
     logout: "Logout",
     email: "Email",
@@ -156,6 +156,29 @@ const translations = {
     cluster: "Cluster",
     inclusion: "Inclusion",
     cavity: "Cavity",
+    // Weld-specific defects
+    lackOfFusion: "Lack of Fusion",
+    undercut: "Undercut",
+    underfill: "Underfill",
+    alignedPorosity: "Aligned Porosity",
+    slagInclusion: "Slag Inclusion",
+    // Specimen type
+    specimenType: "Specimen Type",
+    flatPlate: "Flat Plate",
+    weldedJoint: "Welded Joint",
+    weldZone: "Weld Zone",
+    heatAffectedZone: "Heat Affected Zone (HAZ)",
+    weldZoneInfo: "Defects concentrated in weld bead and HAZ",
+    // Multi-image exam
+    imageOf: "Image",
+    of: "of",
+    previousImage: "Previous",
+    nextImage: "Next",
+    finishExam: "Finish Exam",
+    examProgress: "Exam Progress",
+    imagesReviewed: "images reviewed",
+    noDefectsInImage: "No defects in this image",
+    imageResults: "Results per Image",
     selectDefectType: "Select defect type:",
     confirm: "Confirm",
     cancel: "Cancel",
@@ -367,7 +390,7 @@ const translations = {
   },
   it: {
     title: "Simulatore Radiografia Digitale RT",
-    subtitle: "Sistema Training NAS 410 - Livello 1 & 2",
+    subtitle: "Sistema Training NAS 410 / EN4179 / ISO 9712 - Livello 1 & 2",
     login: "Accedi",
     logout: "Esci",
     email: "Email",
@@ -451,6 +474,29 @@ const translations = {
     cluster: "Cluster",
     inclusion: "Inclusione",
     cavity: "Cavità",
+    // Difetti specifici saldatura
+    lackOfFusion: "Mancata Fusione",
+    undercut: "Undercut",
+    underfill: "Mancato Riempimento",
+    alignedPorosity: "Porosità Allineata",
+    slagInclusion: "Inclusione di Scoria",
+    // Tipo campione
+    specimenType: "Tipo Campione",
+    flatPlate: "Piastra Piana",
+    weldedJoint: "Giunto Saldato",
+    weldZone: "Zona Saldatura",
+    heatAffectedZone: "Zona Termicamente Alterata (ZTA)",
+    weldZoneInfo: "Difetti concentrati nel cordone e nella ZTA",
+    // Esame multi-immagine
+    imageOf: "Immagine",
+    of: "di",
+    previousImage: "Precedente",
+    nextImage: "Successiva",
+    finishExam: "Termina Esame",
+    examProgress: "Progresso Esame",
+    imagesReviewed: "immagini revisionate",
+    noDefectsInImage: "Nessun difetto in questa immagine",
+    imageResults: "Risultati per Immagine",
     selectDefectType: "Seleziona tipo difetto:",
     confirm: "Conferma",
     cancel: "Annulla",
@@ -2471,13 +2517,22 @@ const AdminDashboard = () => {
 };
 
 // Defect Type Selector Modal
-const DefectTypeModal = ({ selectionArea, onConfirm, onCancel, t, isDemo }) => {
+const DefectTypeModal = ({ selectionArea, onConfirm, onCancel, t, isDemo, specimenType = 'plate' }) => {
   const [selectedType, setSelectedType] = useState('crack');
   
-  // In demo mode, only 3 defect types available
-  const availableTypes = isDemo 
-    ? ['crack', 'porosity', 'inclusion'] 
-    : ['crack', 'porosity', 'cluster', 'inclusion', 'cavity'];
+  // Define available types based on specimen type and demo mode
+  let availableTypes;
+  if (specimenType === 'weld') {
+    // Weld-specific defects
+    availableTypes = isDemo 
+      ? ['crack', 'porosity', 'lackOfFusion'] 
+      : ['crack', 'porosity', 'lackOfFusion', 'undercut', 'underfill', 'alignedPorosity', 'slagInclusion'];
+  } else {
+    // Plate defects (original)
+    availableTypes = isDemo 
+      ? ['crack', 'porosity', 'inclusion'] 
+      : ['crack', 'porosity', 'cluster', 'inclusion', 'cavity'];
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
@@ -2532,9 +2587,53 @@ const DefectTypeModal = ({ selectionArea, onConfirm, onCancel, t, isDemo }) => {
 
 // Changelog Modal Component
 const ChangelogModal = ({ onClose, t }) => {
-  const [expandedVersion, setExpandedVersion] = useState('1.0.0-beta');
+  const [expandedVersion, setExpandedVersion] = useState('2.0.0-beta');
   
   const changelog = [
+    {
+      version: '2.0.0-beta',
+      date: '2026-01-17',
+      title: 'Modalità Saldatura ed Esame Multi-Immagine',
+      changes: [
+        {
+          category: 'Nuove Funzionalità',
+          items: [
+            'Esame Multi-Immagine: 5 radiografie da valutare in sequenza',
+            'Navigazione tra immagini con pulsanti e indicatori di progresso',
+            '1-2 immagini senza difetti per testare i falsi positivi',
+            'Punteggio finale aggregato su tutte le immagini',
+            'Selettore Tipo Campione: Piastra Piana o Giunto Saldato',
+            'Rendering visivo del cordone di saldatura e ZTA',
+            'Difetti posizionati nel cordone e zona termicamente alterata'
+          ]
+        },
+        {
+          category: 'Nuovi Difetti da Saldatura',
+          items: [
+            'Mancata Fusione (Lack of Fusion) - linea scura al bordo cordone',
+            'Undercut - solco irregolare ai margini del cordone',
+            'Mancato Riempimento (Underfill) - depressione nel centro cordone',
+            'Porosità Allineata - serie di pori lungo direzione saldatura',
+            'Inclusione di Scoria - forma irregolare, più chiara'
+          ]
+        },
+        {
+          category: 'Normative',
+          items: [
+            'Aggiunto supporto ISO 9712',
+            'Aggiunto supporto EN4179',
+            'Training conforme NAS 410 / EN4179 / ISO 9712'
+          ]
+        },
+        {
+          category: 'Correzioni',
+          items: [
+            'Aggiornato foro competente nei Termini di Servizio',
+            'Migliorato posizionamento difetti per modalità saldatura'
+          ]
+        }
+      ]
+    },
     {
       version: '1.0.0-beta',
       date: '2026-01-14',
@@ -2841,7 +2940,7 @@ const TermsOfServiceModal = ({ onClose, onAccept, showAcceptButton = false }) =>
             </h3>
             <p>
               Questi Termini sono regolati dalla legge italiana. Per qualsiasi controversia sarà competente 
-              il Foro di Bologna, Italia.
+              il Foro di Trento, Italia.
             </p>
           </section>
           
@@ -3048,6 +3147,12 @@ const XRaySimulator = ({ onExamComplete }) => {
   const [showHints, setShowHints] = useState(true);
   const [showDefectModal, setShowDefectModal] = useState(false);
   
+  // Multi-image exam state (5 images per exam)
+  const EXAM_IMAGE_COUNT = 5;
+  const [examImages, setExamImages] = useState([]); // Array of {defects: [], markedDefects: []}
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [examResults, setExamResults] = useState(null); // Results for all images
+  
   // Learning mode: track which defects have been identified
   const [learningFeedback, setLearningFeedback] = useState([]); // { defectId, correct, type }
   const [showMissedDefects, setShowMissedDefects] = useState(false); // Show correction overlay
@@ -3082,6 +3187,9 @@ const XRaySimulator = ({ onExamComplete }) => {
   // IQI settings
   const [iqiType, setIqiType] = useState('none'); // 'none', 'iso', 'astm'
   const [showIQI, setShowIQI] = useState(true);
+  
+  // Specimen type: 'plate' or 'weld'
+  const [specimenType, setSpecimenType] = useState('plate');
   
   // Ideal parameters display
   const [showIdealParams, setShowIdealParams] = useState(false);
@@ -3151,25 +3259,58 @@ const XRaySimulator = ({ onExamComplete }) => {
     }
   };
 
-  const generateDefects = () => {
-    const numDefects = Math.floor(Math.random() * 4) + 2;
+  // Generate defects - can specify count for exam mode, returns defects array
+  const generateDefectsArray = (numDefectsOverride = null) => {
+    const numDefects = numDefectsOverride !== null ? numDefectsOverride : Math.floor(Math.random() * 4) + 2;
     const newDefects = [];
-    // In demo mode, only 3 defect types available
-    const types = user?.isDemo 
-      ? ['crack', 'porosity', 'inclusion'] 
-      : ['crack', 'porosity', 'cluster', 'inclusion', 'cavity'];
+    
+    // Define defect types based on specimen type and demo mode
+    let types;
+    if (specimenType === 'weld') {
+      // Weld-specific defects
+      types = user?.isDemo 
+        ? ['crack', 'porosity', 'lackOfFusion'] 
+        : ['crack', 'porosity', 'lackOfFusion', 'undercut', 'underfill', 'alignedPorosity', 'slagInclusion'];
+    } else {
+      // Plate defects (original)
+      types = user?.isDemo 
+        ? ['crack', 'porosity', 'inclusion'] 
+        : ['crack', 'porosity', 'cluster', 'inclusion', 'cavity'];
+    }
+    
+    // Weld zone parameters (normalized 0-1)
+    const weldCenterX = 0.5; // Centro della saldatura
+    const weldWidth = 0.08; // Larghezza cordone (~8% della piastra)
+    const hazWidth = 0.06; // Larghezza ZTA per lato (~6%)
     
     for (let i = 0; i < numDefects; i++) {
       const type = types[Math.floor(Math.random() * types.length)];
-      const baseX = Math.random() * 0.6 + 0.2;
-      const baseY = Math.random() * 0.6 + 0.2;
+      
+      // Position calculation based on specimen type
+      let baseX, baseY;
+      if (specimenType === 'weld') {
+        // Position defects in weld zone or HAZ
+        const zone = Math.random();
+        if (zone < 0.6) {
+          // 60% in weld bead center
+          baseX = weldCenterX + (Math.random() - 0.5) * weldWidth;
+        } else {
+          // 40% in HAZ (either side)
+          const side = Math.random() < 0.5 ? -1 : 1;
+          baseX = weldCenterX + side * (weldWidth/2 + Math.random() * hazWidth);
+        }
+        baseY = Math.random() * 0.6 + 0.2;
+      } else {
+        // Plate: random position
+        baseX = Math.random() * 0.6 + 0.2;
+        baseY = Math.random() * 0.6 + 0.2;
+      }
       
       switch(type) {
         case 'crack':
           // Cricche: molto sottili, lunghe, irregolari
-          // Genera punti di controllo per un percorso irregolare
-          const crackLength = Math.random() * 0.08 + 0.04; // 4-12% della larghezza
-          const numSegments = Math.floor(Math.random() * 4) + 3; // 3-6 segmenti
+          const crackLength = Math.random() * 0.08 + 0.04;
+          const numSegments = Math.floor(Math.random() * 4) + 3;
           const baseAngle = Math.random() * Math.PI;
           const crackPoints = [];
           
@@ -3177,8 +3318,7 @@ const XRaySimulator = ({ onExamComplete }) => {
           let cy = baseY;
           for (let s = 0; s <= numSegments; s++) {
             crackPoints.push({ x: cx, y: cy });
-            // Deviazione casuale dall'angolo base
-            const angleVar = (Math.random() - 0.5) * 0.6; // ±0.3 rad deviation
+            const angleVar = (Math.random() - 0.5) * 0.6;
             const segLen = crackLength / numSegments;
             cx += Math.cos(baseAngle + angleVar) * segLen;
             cy += Math.sin(baseAngle + angleVar) * segLen;
@@ -3188,9 +3328,8 @@ const XRaySimulator = ({ onExamComplete }) => {
             id: i, type: 'crack',
             x: baseX, y: baseY,
             points: crackPoints,
-            width: Math.random() * 0.002 + 0.001, // Molto sottile: 0.1-0.3% 
+            width: Math.random() * 0.002 + 0.001,
             severity: Math.random() * 0.3 + 0.5,
-            // Ramificazioni occasionali
             branches: Math.random() < 0.3 ? [{
               startIdx: Math.floor(Math.random() * (numSegments - 1)) + 1,
               angle: baseAngle + (Math.random() - 0.5) * 1.2,
@@ -3205,26 +3344,25 @@ const XRaySimulator = ({ onExamComplete }) => {
           newDefects.push({
             id: i, type: 'porosity',
             x: baseX, y: baseY,
-            size: Math.random() * 0.008 + 0.003, // 0.3-1.1% - molto più piccola
-            irregularity: Math.random() * 0.3 + 0.1, // Forma irregolare
+            size: Math.random() * 0.008 + 0.003,
+            irregularity: Math.random() * 0.3 + 0.1,
             severity: Math.random() * 0.4 + 0.4
           });
           break;
           
         case 'cluster':
           // Cluster: gruppo di micro-porosità sparse
-          const numPores = Math.floor(Math.random() * 12) + 5; // 5-16 micro-porosità
-          const clusterRadius = Math.random() * 0.04 + 0.02; // Area del cluster
+          const numPores = Math.floor(Math.random() * 12) + 5;
+          const clusterRadius = Math.random() * 0.04 + 0.02;
           const pores = [];
           
           for (let p = 0; p < numPores; p++) {
-            // Distribuzione casuale nell'area del cluster
             const angle = Math.random() * Math.PI * 2;
             const dist = Math.random() * clusterRadius;
             pores.push({
               dx: Math.cos(angle) * dist,
               dy: Math.sin(angle) * dist,
-              size: Math.random() * 0.004 + 0.001, // Micro: 0.1-0.5%
+              size: Math.random() * 0.004 + 0.001,
               severity: Math.random() * 0.3 + 0.3
             });
           }
@@ -3233,7 +3371,7 @@ const XRaySimulator = ({ onExamComplete }) => {
             id: i, type: 'cluster',
             x: baseX, y: baseY,
             pores: pores,
-            size: clusterRadius // Per compatibilità con hints
+            size: clusterRadius
           });
           break;
           
@@ -3242,8 +3380,8 @@ const XRaySimulator = ({ onExamComplete }) => {
           newDefects.push({
             id: i, type: 'inclusion',
             x: baseX, y: baseY,
-            size: Math.random() * 0.006 + 0.002, // 0.2-0.8% - piccola
-            elongation: Math.random() * 0.5 + 0.5, // Allungamento
+            size: Math.random() * 0.006 + 0.002,
+            elongation: Math.random() * 0.5 + 0.5,
             angle: Math.random() * Math.PI,
             irregularity: Math.random() * 0.2,
             severity: Math.random() * 0.3 + 0.4
@@ -3251,15 +3389,13 @@ const XRaySimulator = ({ onExamComplete }) => {
           break;
           
         case 'cavity':
-          // Cavità: vuoto interno, più grande della porosità, forma irregolare allungata
-          // Rappresenta mancanza di materiale (vuoto di ritiro, soffiatura grande)
-          const cavityWidth = Math.random() * 0.025 + 0.015; // 1.5-4% larghezza
-          const cavityHeight = Math.random() * 0.015 + 0.008; // 0.8-2.3% altezza
+          // Cavità: vuoto interno, più grande della porosità
+          const cavityWidth = Math.random() * 0.025 + 0.015;
+          const cavityHeight = Math.random() * 0.015 + 0.008;
           const cavityAngle = Math.random() * Math.PI;
           const cavityIrregularity = Math.random() * 0.4 + 0.2;
           
-          // Genera contorno irregolare per la cavità
-          const numCavityPoints = Math.floor(Math.random() * 6) + 8; // 8-13 punti
+          const numCavityPoints = Math.floor(Math.random() * 6) + 8;
           const cavityPoints = [];
           for (let cp = 0; cp < numCavityPoints; cp++) {
             const angle = (cp / numCavityPoints) * Math.PI * 2;
@@ -3279,15 +3415,174 @@ const XRaySimulator = ({ onExamComplete }) => {
             angle: cavityAngle,
             points: cavityPoints,
             irregularity: cavityIrregularity,
-            severity: Math.random() * 0.3 + 0.6 // Più scuro (vuoto = meno assorbimento)
+            severity: Math.random() * 0.3 + 0.6
+          });
+          break;
+          
+        // ==================== WELD-SPECIFIC DEFECTS ====================
+        
+        case 'lackOfFusion':
+          // Mancata fusione: linea scura parallela al bordo del cordone
+          // Typically at the fusion line between weld and base metal
+          const lofLength = Math.random() * 0.12 + 0.06; // 6-18% lunghezza
+          const lofAngle = Math.PI / 2 + (Math.random() - 0.5) * 0.2; // Quasi verticale
+          const lofPoints = [];
+          
+          let lx = baseX;
+          let ly = baseY;
+          const lofSegments = Math.floor(Math.random() * 3) + 4;
+          for (let s = 0; s <= lofSegments; s++) {
+            lofPoints.push({ x: lx, y: ly });
+            const angleVar = (Math.random() - 0.5) * 0.15; // Piccola variazione
+            const segLen = lofLength / lofSegments;
+            lx += Math.cos(lofAngle + angleVar) * segLen * 0.1;
+            ly += Math.sin(lofAngle + angleVar) * segLen;
+          }
+          
+          newDefects.push({
+            id: i, type: 'lackOfFusion',
+            x: baseX, y: baseY,
+            points: lofPoints,
+            width: Math.random() * 0.003 + 0.002, // Linea sottile
+            length: lofLength,
+            severity: Math.random() * 0.3 + 0.6
+          });
+          break;
+          
+        case 'undercut':
+          // Undercut: solco ai bordi del cordone, linea scura irregolare
+          // Position at weld toe (edge of weld bead)
+          const undercutSide = Math.random() < 0.5 ? -1 : 1;
+          const undercutX = weldCenterX + undercutSide * weldWidth / 2;
+          const undercutLength = Math.random() * 0.15 + 0.08;
+          const undercutPoints = [];
+          
+          let ux = undercutX;
+          let uy = baseY;
+          const undercutSegments = Math.floor(Math.random() * 5) + 6;
+          for (let s = 0; s <= undercutSegments; s++) {
+            // Segue il bordo del cordone (verticale) con irregolarità
+            undercutPoints.push({ 
+              x: ux + (Math.random() - 0.5) * 0.008, 
+              y: uy 
+            });
+            uy += undercutLength / undercutSegments;
+          }
+          
+          newDefects.push({
+            id: i, type: 'undercut',
+            x: undercutX, y: baseY,
+            points: undercutPoints,
+            width: Math.random() * 0.004 + 0.002,
+            length: undercutLength,
+            side: undercutSide,
+            severity: Math.random() * 0.3 + 0.5
+          });
+          break;
+          
+        case 'underfill':
+          // Mancato riempimento: depressione nel centro del cordone
+          // Appears as dark line along weld centerline
+          const underfillLength = Math.random() * 0.12 + 0.06;
+          const underfillWidth = Math.random() * 0.015 + 0.008;
+          
+          newDefects.push({
+            id: i, type: 'underfill',
+            x: weldCenterX, // Sempre al centro del cordone
+            y: baseY,
+            length: underfillLength,
+            width: underfillWidth,
+            depth: Math.random() * 0.4 + 0.3, // Profondità variabile
+            severity: Math.random() * 0.3 + 0.5
+          });
+          break;
+          
+        case 'alignedPorosity':
+          // Porosità allineata: serie di pori lungo la direzione di saldatura
+          const apNumPores = Math.floor(Math.random() * 6) + 4; // 4-9 pori
+          const apSpacing = Math.random() * 0.02 + 0.01; // Spaziatura tra pori
+          const apPores = [];
+          
+          let apY = baseY;
+          for (let p = 0; p < apNumPores; p++) {
+            apPores.push({
+              dx: (Math.random() - 0.5) * 0.01, // Piccola variazione laterale
+              dy: p * apSpacing,
+              size: Math.random() * 0.005 + 0.002,
+              severity: Math.random() * 0.3 + 0.4
+            });
+          }
+          
+          newDefects.push({
+            id: i, type: 'alignedPorosity',
+            x: baseX,
+            y: baseY,
+            pores: apPores,
+            totalLength: apNumPores * apSpacing,
+            size: apSpacing * apNumPores // Per hint
+          });
+          break;
+          
+        case 'slagInclusion':
+          // Inclusione di scoria: forma irregolare allungata, più chiara
+          // Trapped slag from welding process
+          const slagLength = Math.random() * 0.04 + 0.02;
+          const slagWidth = Math.random() * 0.008 + 0.004;
+          const slagAngle = Math.PI / 2 + (Math.random() - 0.5) * 0.4; // Quasi verticale
+          
+          // Genera forma irregolare
+          const slagPoints = [];
+          const numSlagPoints = Math.floor(Math.random() * 4) + 6;
+          for (let sp = 0; sp < numSlagPoints; sp++) {
+            const angle = (sp / numSlagPoints) * Math.PI * 2;
+            const rx = slagLength / 2 * (1 + (Math.random() - 0.5) * 0.4);
+            const ry = slagWidth / 2 * (1 + (Math.random() - 0.5) * 0.4);
+            slagPoints.push({
+              dx: Math.cos(angle) * rx,
+              dy: Math.sin(angle) * ry
+            });
+          }
+          
+          newDefects.push({
+            id: i, type: 'slagInclusion',
+            x: baseX,
+            y: baseY,
+            length: slagLength,
+            width: slagWidth,
+            angle: slagAngle,
+            points: slagPoints,
+            severity: Math.random() * 0.3 + 0.5
           });
           break;
       }
     }
+    return newDefects;
+  };
+  
+  // Wrapper function for single image generation (backward compatible)
+  const generateDefects = () => {
+    const newDefects = generateDefectsArray();
     setDefects(newDefects);
     setNoiseSeed(Date.now());
-    setZoom(1); // Reset zoom
-    setPanOffset({ x: 0, y: 0 }); // Reset pan
+    setZoom(1);
+    setPanOffset({ x: 0, y: 0 });
+  };
+  
+  // Generate multiple images for exam mode
+  const generateExamImages = () => {
+    const images = [];
+    for (let i = 0; i < EXAM_IMAGE_COUNT; i++) {
+      // 1-2 images without defects, others with 2-3 defects
+      const hasDefects = i >= 2 || Math.random() > 0.3; // ~70% chance for first 2 images
+      const numDefects = hasDefects ? Math.floor(Math.random() * 2) + 2 : 0; // 2-3 difetti o 0
+      
+      images.push({
+        defects: generateDefectsArray(numDefects),
+        markedDefects: [],
+        noiseSeed: Date.now() + i * 1000 // Different seed for each image
+      });
+    }
+    return images;
   };
   
   // Auto calibration function
@@ -3896,6 +4191,27 @@ const XRaySimulator = ({ onExamComplete }) => {
         const edgeFactor = 1 + 0.3 * Math.pow(Math.abs(nx - 0.5) * 2, 2);
         let localThickness = thickness * edgeFactor;
         
+        // Weld zone rendering (visual appearance of weld bead and HAZ)
+        let weldFactor = 1;
+        if (specimenType === 'weld') {
+          const weldCenterX = 0.5;
+          const weldWidth = 0.08;
+          const hazWidth = 0.06;
+          const distFromCenter = Math.abs(nx - weldCenterX);
+          
+          if (distFromCenter < weldWidth / 2) {
+            // Inside weld bead - slightly different density (usually slightly darker due to different grain structure)
+            const weldIntensity = 1 - (distFromCenter / (weldWidth / 2));
+            weldFactor = 1 - 0.05 * weldIntensity; // 5% darker at center
+            // Add slight texture variation for weld bead
+            localThickness *= (1 + 0.02 * Math.sin(ny * 50) * Math.cos(nx * 30));
+          } else if (distFromCenter < weldWidth / 2 + hazWidth) {
+            // In HAZ - gradual transition
+            const hazPos = (distFromCenter - weldWidth / 2) / hazWidth;
+            weldFactor = 1 - 0.02 * (1 - hazPos); // Gradual transition
+          }
+        }
+        
         let defectFactor = 1;
         defects.forEach(defect => {
           const dx = nx - defect.x;
@@ -4057,10 +4373,143 @@ const XRaySimulator = ({ onExamComplete }) => {
                 }
               }
               break;
+              
+            // ==================== WELD-SPECIFIC DEFECTS ====================
+            
+            case 'lackOfFusion':
+              // Mancata fusione: linea scura parallela al cordone
+              if (defect.points && defect.points.length > 1) {
+                for (let s = 0; s < defect.points.length - 1; s++) {
+                  const p1 = defect.points[s];
+                  const p2 = defect.points[s + 1];
+                  
+                  const segDx = p2.x - p1.x;
+                  const segDy = p2.y - p1.y;
+                  const segLen = Math.sqrt(segDx * segDx + segDy * segDy);
+                  
+                  if (segLen > 0) {
+                    const t = Math.max(0, Math.min(1, 
+                      ((nx - p1.x) * segDx + (ny - p1.y) * segDy) / (segLen * segLen)
+                    ));
+                    const projX = p1.x + t * segDx;
+                    const projY = p1.y + t * segDy;
+                    const distToSeg = Math.sqrt((nx - projX) ** 2 + (ny - projY) ** 2);
+                    
+                    if (distToSeg < defect.width) {
+                      const edgeFade = 1 - (distToSeg / defect.width);
+                      // Lack of fusion appears as dark line (less material bonded)
+                      defectFactor *= (1 - defect.severity * edgeFade * 0.75);
+                    }
+                  }
+                }
+              }
+              break;
+              
+            case 'undercut':
+              // Undercut: solco ai bordi del cordone
+              if (defect.points && defect.points.length > 1) {
+                for (let s = 0; s < defect.points.length - 1; s++) {
+                  const p1 = defect.points[s];
+                  const p2 = defect.points[s + 1];
+                  
+                  const segDx = p2.x - p1.x;
+                  const segDy = p2.y - p1.y;
+                  const segLen = Math.sqrt(segDx * segDx + segDy * segDy);
+                  
+                  if (segLen > 0) {
+                    const t = Math.max(0, Math.min(1, 
+                      ((nx - p1.x) * segDx + (ny - p1.y) * segDy) / (segLen * segLen)
+                    ));
+                    const projX = p1.x + t * segDx;
+                    const projY = p1.y + t * segDy;
+                    const distToSeg = Math.sqrt((nx - projX) ** 2 + (ny - projY) ** 2);
+                    
+                    // Width varies along the undercut
+                    const widthVar = defect.width * (0.7 + 0.6 * Math.sin(t * Math.PI));
+                    
+                    if (distToSeg < widthVar) {
+                      const edgeFade = 1 - (distToSeg / widthVar);
+                      // Undercut is a groove = less material = darker
+                      defectFactor *= (1 - defect.severity * edgeFade * 0.65);
+                    }
+                  }
+                }
+              }
+              break;
+              
+            case 'underfill':
+              // Mancato riempimento: depressione lungo il centro del cordone
+              if (defect.length && defect.width) {
+                // Check if point is within the underfill region
+                const ufDx = nx - defect.x;
+                const ufDy = ny - defect.y;
+                
+                // Elongated shape along weld direction (vertical)
+                if (Math.abs(ufDx) < defect.width / 2 && ufDy >= 0 && ufDy < defect.length) {
+                  // Depth varies - deeper in center
+                  const lateralFade = 1 - Math.abs(ufDx) / (defect.width / 2);
+                  const longitudinalFade = Math.sin((ufDy / defect.length) * Math.PI);
+                  const depthIntensity = lateralFade * longitudinalFade * defect.depth;
+                  
+                  // Underfill = less material = darker
+                  defectFactor *= (1 - defect.severity * depthIntensity * 0.7);
+                }
+              }
+              break;
+              
+            case 'alignedPorosity':
+              // Porosità allineata: serie di pori lungo la direzione di saldatura
+              if (defect.pores) {
+                defect.pores.forEach(pore => {
+                  const poreDx = nx - (defect.x + pore.dx);
+                  const poreDy = ny - (defect.y + pore.dy);
+                  const poreDist = Math.sqrt(poreDx * poreDx + poreDy * poreDy);
+                  
+                  if (poreDist < pore.size) {
+                    const normalizedDist = poreDist / pore.size;
+                    const poreIntensity = (1 - normalizedDist) * (1 - normalizedDist);
+                    defectFactor *= (1 - pore.severity * poreIntensity * 0.85);
+                  }
+                });
+              }
+              break;
+              
+            case 'slagInclusion':
+              // Inclusione di scoria: forma irregolare, più chiara (materiale denso)
+              if (defect.points && defect.points.length > 2) {
+                // Ruota coordinate per l'angolo della scoria
+                const cosA = Math.cos(defect.angle);
+                const sinA = Math.sin(defect.angle);
+                const rotDx = dx * cosA + dy * sinA;
+                const rotDy = -dx * sinA + dy * cosA;
+                
+                // Controlla se dentro la forma della scoria (poligono irregolare)
+                let insideSlag = false;
+                const slagPts = defect.points;
+                
+                for (let si = 0, sj = slagPts.length - 1; si < slagPts.length; sj = si++) {
+                  const xi = slagPts[si].dx;
+                  const yi = slagPts[si].dy;
+                  const xj = slagPts[sj].dx;
+                  const yj = slagPts[sj].dy;
+                  
+                  if (((yi > rotDy) !== (yj > rotDy)) && (rotDx < (xj - xi) * (rotDy - yi) / (yj - yi) + xi)) {
+                    insideSlag = !insideSlag;
+                  }
+                }
+                
+                if (insideSlag) {
+                  // Slag is denser than base metal = brighter (more absorption)
+                  const normalizedDist = dist / Math.max(defect.length, defect.width);
+                  const slagIntensity = Math.max(0, 1 - normalizedDist);
+                  defectFactor *= (1 + defect.severity * slagIntensity * 1.2);
+                }
+              }
+              break;
           }
         });
         
-        let intensity = calculateIntensity(baseIntensity, localThickness, defectFactor);
+        let intensity = calculateIntensity(baseIntensity, localThickness, defectFactor * weldFactor);
         
         // Apply detector-specific response curve
         if (noiseParams.responseGamma !== 1.0) {
@@ -4567,6 +5016,78 @@ const XRaySimulator = ({ onExamComplete }) => {
       }
     }
     
+    // Draw weld zone overlay when specimen is a welded joint
+    if (specimenType === 'weld' && mode === 'teaching') {
+      const weldCenterX = 0.5;
+      const weldWidth = 0.08;
+      const hazWidth = 0.06;
+      
+      // Draw HAZ zones (subtle orange)
+      octx.fillStyle = 'rgba(255, 150, 50, 0.1)';
+      // Left HAZ
+      octx.fillRect(
+        (weldCenterX - weldWidth/2 - hazWidth) * width, 
+        0, 
+        hazWidth * width, 
+        height
+      );
+      // Right HAZ
+      octx.fillRect(
+        (weldCenterX + weldWidth/2) * width, 
+        0, 
+        hazWidth * width, 
+        height
+      );
+      
+      // Draw weld bead center zone (subtle yellow)
+      octx.fillStyle = 'rgba(255, 220, 100, 0.08)';
+      octx.fillRect(
+        (weldCenterX - weldWidth/2) * width, 
+        0, 
+        weldWidth * width, 
+        height
+      );
+      
+      // Draw weld bead edges (dashed lines)
+      octx.strokeStyle = 'rgba(255, 180, 0, 0.4)';
+      octx.lineWidth = 1;
+      octx.setLineDash([5, 5]);
+      
+      // Left edge of weld
+      octx.beginPath();
+      octx.moveTo((weldCenterX - weldWidth/2) * width, 0);
+      octx.lineTo((weldCenterX - weldWidth/2) * width, height);
+      octx.stroke();
+      
+      // Right edge of weld
+      octx.beginPath();
+      octx.moveTo((weldCenterX + weldWidth/2) * width, 0);
+      octx.lineTo((weldCenterX + weldWidth/2) * width, height);
+      octx.stroke();
+      
+      // HAZ outer edges (fainter)
+      octx.strokeStyle = 'rgba(255, 150, 50, 0.3)';
+      octx.beginPath();
+      octx.moveTo((weldCenterX - weldWidth/2 - hazWidth) * width, 0);
+      octx.lineTo((weldCenterX - weldWidth/2 - hazWidth) * width, height);
+      octx.stroke();
+      
+      octx.beginPath();
+      octx.moveTo((weldCenterX + weldWidth/2 + hazWidth) * width, 0);
+      octx.lineTo((weldCenterX + weldWidth/2 + hazWidth) * width, height);
+      octx.stroke();
+      
+      octx.setLineDash([]);
+      
+      // Labels
+      octx.font = '10px Arial';
+      octx.fillStyle = 'rgba(255, 200, 50, 0.7)';
+      octx.textAlign = 'center';
+      octx.fillText('ZTA', (weldCenterX - weldWidth/2 - hazWidth/2) * width, 15);
+      octx.fillText('CORDONE', weldCenterX * width, 15);
+      octx.fillText('ZTA', (weldCenterX + weldWidth/2 + hazWidth/2) * width, 15);
+    }
+    
     // Draw teaching mode hints (highlighted defects)
     if (mode === 'teaching') {
       defects.forEach(defect => {
@@ -4613,6 +5134,44 @@ const XRaySimulator = ({ onExamComplete }) => {
             if (i > 0) octx.lineTo((defect.x + pt.dx) * width, (defect.y + pt.dy) * height);
           });
           octx.closePath();
+        } else if ((defect.type === 'lackOfFusion' || defect.type === 'undercut') && defect.points) {
+          // Draw line-type weld defects
+          const points = defect.points;
+          if (points.length > 0) {
+            octx.moveTo(points[0].x * width, points[0].y * height);
+            for (let i = 1; i < points.length; i++) {
+              octx.lineTo(points[i].x * width, points[i].y * height);
+            }
+          }
+        } else if (defect.type === 'underfill') {
+          // Draw underfill as rectangle
+          octx.rect(
+            (defect.x - defect.width/2) * width,
+            defect.y * height,
+            defect.width * width,
+            defect.length * height
+          );
+        } else if (defect.type === 'alignedPorosity' && defect.pores) {
+          // Draw circle around aligned porosity chain
+          const totalLen = defect.totalLength || 0.1;
+          octx.moveTo(defect.x * width, defect.y * height);
+          octx.lineTo(defect.x * width, (defect.y + totalLen) * height);
+          // Also draw small circles for each pore
+          defect.pores.forEach(pore => {
+            octx.moveTo((defect.x + pore.dx + pore.size) * width, (defect.y + pore.dy) * height);
+            octx.arc((defect.x + pore.dx) * width, (defect.y + pore.dy) * height, pore.size * width, 0, Math.PI * 2);
+          });
+        } else if (defect.type === 'slagInclusion' && defect.points) {
+          // Draw slag inclusion outline
+          octx.save();
+          octx.translate(defect.x * width, defect.y * height);
+          octx.rotate(defect.angle || 0);
+          octx.moveTo(defect.points[0].dx * width, defect.points[0].dy * height);
+          defect.points.forEach((pt, i) => {
+            if (i > 0) octx.lineTo(pt.dx * width, pt.dy * height);
+          });
+          octx.closePath();
+          octx.restore();
         } else {
           const radius = (defect.size || 0.01) * width;
           octx.arc(defect.x * width, defect.y * height, radius, 0, Math.PI * 2);
@@ -4670,6 +5229,38 @@ const XRaySimulator = ({ onExamComplete }) => {
           // Disegna un'ellisse per l'inclusione
           const radiusX = (defect.size || 0.01) * width;
           const radiusY = radiusX * defect.elongation;
+          octx.save();
+          octx.translate(defect.x * width, defect.y * height);
+          octx.rotate(defect.angle || 0);
+          octx.ellipse(0, 0, radiusX, radiusY, 0, 0, Math.PI * 2);
+          octx.restore();
+        } else if ((defect.type === 'lackOfFusion' || defect.type === 'undercut') && defect.points) {
+          // Line-type weld defects
+          const points = defect.points;
+          if (points.length > 0) {
+            octx.moveTo(points[0].x * width, points[0].y * height);
+            for (let i = 1; i < points.length; i++) {
+              octx.lineTo(points[i].x * width, points[i].y * height);
+            }
+          }
+        } else if (defect.type === 'underfill') {
+          // Underfill rectangle
+          octx.rect(
+            (defect.x - defect.width/2) * width,
+            defect.y * height,
+            defect.width * width,
+            defect.length * height
+          );
+        } else if (defect.type === 'alignedPorosity' && defect.pores) {
+          // Aligned porosity chain
+          defect.pores.forEach(pore => {
+            octx.moveTo((defect.x + pore.dx + pore.size) * width, (defect.y + pore.dy) * height);
+            octx.arc((defect.x + pore.dx) * width, (defect.y + pore.dy) * height, pore.size * width, 0, Math.PI * 2);
+          });
+        } else if (defect.type === 'slagInclusion' && defect.length) {
+          // Slag inclusion ellipse
+          const radiusX = (defect.length / 2) * width;
+          const radiusY = (defect.width / 2) * height;
           octx.save();
           octx.translate(defect.x * width, defect.y * height);
           octx.rotate(defect.angle || 0);
@@ -4854,7 +5445,7 @@ const XRaySimulator = ({ onExamComplete }) => {
       octx.setLineDash([]);
     }
     
-  }, [material, thickness, kV, mA, defects, mode, showHints, markedDefects, examStarted, t, isDrawing, selectionStart, selectionEnd, brightness, contrast, offsetCorrection, gainCorrection, badPixelCorrection, noiseSeed, detectorType, iqiType, showIQI, learningFeedback, score, invertedPolarity, showMissedDefects]);
+  }, [material, thickness, kV, mA, defects, mode, showHints, markedDefects, examStarted, t, isDrawing, selectionStart, selectionEnd, brightness, contrast, offsetCorrection, gainCorrection, badPixelCorrection, noiseSeed, detectorType, iqiType, showIQI, learningFeedback, score, invertedPolarity, showMissedDefects, specimenType]);
 
   // Auto-update ideal params in teaching mode when material/thickness changes
   useEffect(() => {
@@ -4908,9 +5499,57 @@ const XRaySimulator = ({ onExamComplete }) => {
 
   const startExam = () => {
     setExamStarted(true);
-    setMarkedDefects([]);
     setScore(null);
-    generateDefects();
+    setExamResults(null);
+    setCurrentImageIndex(0);
+    
+    // Generate all exam images
+    const images = generateExamImages();
+    setExamImages(images);
+    
+    // Load first image
+    setDefects(images[0].defects);
+    setMarkedDefects([]);
+    setNoiseSeed(images[0].noiseSeed);
+    setZoom(1);
+    setPanOffset({ x: 0, y: 0 });
+  };
+  
+  // Navigate to next/previous image in exam
+  const goToNextImage = () => {
+    if (currentImageIndex < EXAM_IMAGE_COUNT - 1) {
+      // Save current marked defects
+      const updatedImages = [...examImages];
+      updatedImages[currentImageIndex].markedDefects = [...markedDefects];
+      setExamImages(updatedImages);
+      
+      // Load next image
+      const nextIndex = currentImageIndex + 1;
+      setCurrentImageIndex(nextIndex);
+      setDefects(updatedImages[nextIndex].defects);
+      setMarkedDefects(updatedImages[nextIndex].markedDefects || []);
+      setNoiseSeed(updatedImages[nextIndex].noiseSeed);
+      setZoom(1);
+      setPanOffset({ x: 0, y: 0 });
+    }
+  };
+  
+  const goToPreviousImage = () => {
+    if (currentImageIndex > 0) {
+      // Save current marked defects
+      const updatedImages = [...examImages];
+      updatedImages[currentImageIndex].markedDefects = [...markedDefects];
+      setExamImages(updatedImages);
+      
+      // Load previous image
+      const prevIndex = currentImageIndex - 1;
+      setCurrentImageIndex(prevIndex);
+      setDefects(updatedImages[prevIndex].defects);
+      setMarkedDefects(updatedImages[prevIndex].markedDefects || []);
+      setNoiseSeed(updatedImages[prevIndex].noiseSeed);
+      setZoom(1);
+      setPanOffset({ x: 0, y: 0 });
+    }
   };
 
   const generateCertificate = async (user, exam) => {
@@ -4963,80 +5602,125 @@ ID Certificato: ${user.id}-${exam.date}
   };
 
   const evaluateExam = async () => {
-    let correctPosition = 0;
-    let correctType = 0;
-    let totalMarked = markedDefects.length;
+    // Save current image's marked defects first
+    const finalImages = [...examImages];
+    finalImages[currentImageIndex].markedDefects = [...markedDefects];
     
-    // Check each marked defect
-    markedDefects.forEach(mark => {
-      if (mark.matchedDefect) {
-        correctPosition++;
-        if (mark.isCorrectType) {
-          correctType++;
+    // Evaluate all images
+    let totalCorrectPosition = 0;
+    let totalCorrectType = 0;
+    let totalMarkedAll = 0;
+    let totalDefectsAll = 0;
+    let totalFalsePositives = 0;
+    
+    const imageResults = finalImages.map((img, idx) => {
+      let imgCorrectPosition = 0;
+      let imgCorrectType = 0;
+      const imgMarked = img.markedDefects || [];
+      
+      imgMarked.forEach(mark => {
+        if (mark.matchedDefect) {
+          imgCorrectPosition++;
+          if (mark.isCorrectType) {
+            imgCorrectType++;
+          }
         }
-      }
+      });
+      
+      const imgDefects = img.defects.length;
+      const imgFalsePositives = imgMarked.length - imgCorrectPosition;
+      
+      totalCorrectPosition += imgCorrectPosition;
+      totalCorrectType += imgCorrectType;
+      totalMarkedAll += imgMarked.length;
+      totalDefectsAll += imgDefects;
+      totalFalsePositives += imgFalsePositives;
+      
+      return {
+        imageIndex: idx + 1,
+        defectsCount: imgDefects,
+        detectedCount: imgCorrectPosition,
+        correctTypeCount: imgCorrectType,
+        falsePositives: imgFalsePositives,
+        detectionRate: imgDefects > 0 ? (imgCorrectPosition / imgDefects * 100).toFixed(1) : 100
+      };
     });
     
-    const totalDefects = defects.length;
-    const detectionRate = totalDefects > 0 ? (correctPosition / totalDefects) * 100 : 0;
-    const classificationAccuracy = totalMarked > 0 ? (correctType / totalMarked) * 100 : 0;
-    const falsePositives = totalMarked - correctPosition;
+    const detectionRate = totalDefectsAll > 0 ? (totalCorrectPosition / totalDefectsAll) * 100 : 100;
+    const classificationAccuracy = totalMarkedAll > 0 ? (totalCorrectType / totalMarkedAll) * 100 : 0;
     
     // Scoring: 50% position, 30% classification, 20% false positives penalty
     const positionScore = detectionRate * 0.5;
     const classificationScore = classificationAccuracy * 0.3;
-    const falsePositivesPenalty = Math.max(0, 20 - (falsePositives * 5));
+    const falsePositivesPenalty = Math.max(0, 20 - (totalFalsePositives * 5));
     
     const finalScore = positionScore + classificationScore + falsePositivesPenalty;
     
-    // Build set of detected defect IDs
-    const detectedDefectIds = new Set();
-    markedDefects.forEach(md => {
-      if (md.matchedDefect) {
-        detectedDefectIds.add(md.matchedDefect.id);
-      }
-    });
+    // Build review data for all images
+    const allDefectsReview = [];
+    const allMarkedReview = [];
     
-    const examResult = {
-      date: new Date().toISOString(),
-      score: finalScore.toFixed(1),
-      detected: correctPosition,
-      total: totalDefects,
-      correctType,
-      falsePositives,
-      classificationAccuracy: classificationAccuracy.toFixed(1),
-      material,
-      thickness,
-      kV,
-      mA,
-      // Training time in seconds (accumulated before exam)
-      trainingTimeSeconds: totalTrainingTime,
-      trainingTimeFormatted: formatTime(totalTrainingTime),
-      // Review data
-      reviewData: {
-        defects: defects.map(d => ({
+    finalImages.forEach((img, imgIdx) => {
+      const detectedDefectIds = new Set();
+      (img.markedDefects || []).forEach(md => {
+        if (md.matchedDefect) {
+          detectedDefectIds.add(md.matchedDefect.id);
+        }
+      });
+      
+      img.defects.forEach(d => {
+        allDefectsReview.push({
+          imageIndex: imgIdx + 1,
           id: d.id,
           type: d.type,
           x: d.x,
           y: d.y,
           size: d.size || d.width || 0.02,
           detected: detectedDefectIds.has(d.id)
-        })),
-        markedDefects: markedDefects.map(md => ({
+        });
+      });
+      
+      (img.markedDefects || []).forEach(md => {
+        allMarkedReview.push({
+          imageIndex: imgIdx + 1,
           id: md.id,
           type: md.identifiedType,
-          x: md.normalizedX,  // Fixed: was normalizedCenterX
-          y: md.normalizedY,  // Fixed: was normalizedCenterY
+          x: md.normalizedX,
+          y: md.normalizedY,
           width: md.normalizedWidth,
           height: md.normalizedHeight,
           isCorrectPosition: md.matchedDefect !== null,
           isCorrectType: md.matchedDefect !== null && md.identifiedType === md.matchedDefect.type,
           actualType: md.matchedDefect?.type || null
-        }))
+        });
+      });
+    });
+    
+    const examResult = {
+      date: new Date().toISOString(),
+      score: finalScore.toFixed(1),
+      detected: totalCorrectPosition,
+      total: totalDefectsAll,
+      correctType: totalCorrectType,
+      falsePositives: totalFalsePositives,
+      classificationAccuracy: classificationAccuracy.toFixed(1),
+      material,
+      thickness,
+      kV,
+      mA,
+      specimenType,
+      imageCount: EXAM_IMAGE_COUNT,
+      imageResults, // Per-image breakdown
+      trainingTimeSeconds: totalTrainingTime,
+      trainingTimeFormatted: formatTime(totalTrainingTime),
+      reviewData: {
+        defects: allDefectsReview,
+        markedDefects: allMarkedReview
       }
     };
     
     setScore(examResult);
+    setExamResults(imageResults);
     
     // Increment session exam count for single session users
     if (user?.isSingleSession && !user?.isDemo) {
@@ -5076,6 +5760,7 @@ ID Certificato: ${user.id}-${exam.date}
           onCancel={handleDefectTypeCancel}
           t={t}
           isDemo={user?.isDemo}
+          specimenType={specimenType}
         />
       )}
       
@@ -5165,9 +5850,50 @@ ID Certificato: ${user.id}-${exam.date}
                 </button>
               )
             ) : !score && (
-              <button onClick={evaluateExam} className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded font-semibold">
-                {t.evaluate}
-              </button>
+              <div className="flex items-center gap-3">
+                {/* Image navigation for multi-image exam */}
+                <div className="flex items-center gap-2 bg-gray-700 px-3 py-2 rounded">
+                  <button 
+                    onClick={goToPreviousImage} 
+                    disabled={currentImageIndex === 0}
+                    className="p-1 hover:bg-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={t.previousImage}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-sm font-medium min-w-[80px] text-center">
+                    {t.imageOf || 'Image'} {currentImageIndex + 1} {t.of || 'of'} {EXAM_IMAGE_COUNT}
+                  </span>
+                  <button 
+                    onClick={goToNextImage} 
+                    disabled={currentImageIndex === EXAM_IMAGE_COUNT - 1}
+                    className="p-1 hover:bg-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={t.nextImage}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                {/* Progress dots */}
+                <div className="flex gap-1">
+                  {Array.from({ length: EXAM_IMAGE_COUNT }).map((_, idx) => (
+                    <div 
+                      key={idx}
+                      className={`w-2 h-2 rounded-full transition-colors ${
+                        idx === currentImageIndex 
+                          ? 'bg-yellow-500' 
+                          : idx < currentImageIndex 
+                            ? 'bg-green-500' 
+                            : 'bg-gray-600'
+                      }`}
+                    />
+                  ))}
+                </div>
+                
+                <button onClick={evaluateExam} className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded font-semibold">
+                  {t.finishExam || t.evaluate}
+                </button>
+              </div>
             )}
           </div>
         )}
@@ -5302,6 +6028,40 @@ ID Certificato: ${user.id}-${exam.date}
                   );
                 })()}
               </div>
+            )}
+          </div>
+
+          {/* Specimen Type Selector */}
+          <div className="border-t border-gray-700 pt-4">
+            <label className="block text-sm font-medium mb-2">{t.specimenType || 'Tipo Campione'}</label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSpecimenType('plate')}
+                disabled={examStarted}
+                className={`flex-1 px-3 py-2 rounded text-sm font-medium transition ${
+                  specimenType === 'plate' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                } disabled:opacity-50`}
+              >
+                {t.flatPlate || 'Piastra'}
+              </button>
+              <button
+                onClick={() => setSpecimenType('weld')}
+                disabled={examStarted}
+                className={`flex-1 px-3 py-2 rounded text-sm font-medium transition ${
+                  specimenType === 'weld' 
+                    ? 'bg-orange-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                } disabled:opacity-50`}
+              >
+                {t.weldedJoint || 'Saldatura'}
+              </button>
+            </div>
+            {specimenType === 'weld' && (
+              <p className="text-xs text-orange-400 mt-2">
+                {t.weldZoneInfo || 'Difetti concentrati nel cordone e nella ZTA'}
+              </p>
             )}
           </div>
 
