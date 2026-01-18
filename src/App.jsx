@@ -3571,9 +3571,18 @@ const XRaySimulator = ({ onExamComplete }) => {
   // Generate multiple images for exam mode
   const generateExamImages = () => {
     const images = [];
+    
+    // Garantire almeno 1 immagine senza difetti (per testare falsi positivi)
+    // Scegli casualmente 1-2 posizioni per immagini senza difetti
+    const numCleanImages = Math.random() < 0.5 ? 1 : 2; // 50% chance di avere 1 o 2 immagini pulite
+    const cleanImageIndices = new Set();
+    
+    while (cleanImageIndices.size < numCleanImages) {
+      cleanImageIndices.add(Math.floor(Math.random() * EXAM_IMAGE_COUNT));
+    }
+    
     for (let i = 0; i < EXAM_IMAGE_COUNT; i++) {
-      // 1-2 images without defects, others with 2-3 defects
-      const hasDefects = i >= 2 || Math.random() > 0.3; // ~70% chance for first 2 images
+      const hasDefects = !cleanImageIndices.has(i);
       const numDefects = hasDefects ? Math.floor(Math.random() * 2) + 2 : 0; // 2-3 difetti o 0
       
       images.push({
@@ -5252,94 +5261,8 @@ const XRaySimulator = ({ onExamComplete }) => {
       });
     }
     
-    // Draw learning mode hints (semi-transparent, helps locate but doesn't reveal)
-    if (mode === 'learning' && showHints && !examStarted) {
-      defects.forEach(defect => {
-        octx.strokeStyle = 'rgba(255, 80, 80, 0.7)';
-        octx.lineWidth = 2;
-        octx.setLineDash([5, 5]);
-        octx.beginPath();
-        
-        if (defect.type === 'crack' && defect.points) {
-          // Disegna il percorso della cricca
-          const points = defect.points;
-          if (points.length > 0) {
-            octx.moveTo(points[0].x * width, points[0].y * height);
-            for (let i = 1; i < points.length; i++) {
-              octx.lineTo(points[i].x * width, points[i].y * height);
-            }
-            // Disegna anche le ramificazioni
-            if (defect.branches) {
-              defect.branches.forEach(branch => {
-                if (branch.startIdx < points.length) {
-                  const startPt = points[branch.startIdx];
-                  octx.moveTo(startPt.x * width, startPt.y * height);
-                  const endX = startPt.x + Math.cos(branch.angle) * branch.length;
-                  const endY = startPt.y + Math.sin(branch.angle) * branch.length;
-                  octx.lineTo(endX * width, endY * height);
-                }
-              });
-            }
-          }
-        } else if (defect.type === 'cluster' && defect.pores) {
-          // Disegna un cerchio attorno all'area del cluster
-          const clusterRadius = defect.size || 0.03;
-          octx.arc(defect.x * width, defect.y * height, clusterRadius * width, 0, Math.PI * 2);
-        } else if (defect.type === 'inclusion' && defect.elongation) {
-          // Disegna un'ellisse per l'inclusione
-          const radiusX = (defect.size || 0.01) * width;
-          const radiusY = radiusX * defect.elongation;
-          octx.save();
-          octx.translate(defect.x * width, defect.y * height);
-          octx.rotate(defect.angle || 0);
-          octx.ellipse(0, 0, radiusX, radiusY, 0, 0, Math.PI * 2);
-          octx.restore();
-        } else if ((defect.type === 'lackOfFusion' || defect.type === 'undercut') && defect.points) {
-          // Line-type weld defects
-          const points = defect.points;
-          if (points.length > 0) {
-            octx.moveTo(points[0].x * width, points[0].y * height);
-            for (let i = 1; i < points.length; i++) {
-              octx.lineTo(points[i].x * width, points[i].y * height);
-            }
-          }
-        } else if (defect.type === 'underfill') {
-          // Underfill rectangle
-          octx.rect(
-            (defect.x - defect.width/2) * width,
-            defect.y * height,
-            defect.width * width,
-            defect.length * height
-          );
-        } else if (defect.type === 'alignedPorosity' && defect.pores) {
-          // Aligned porosity chain
-          defect.pores.forEach(pore => {
-            octx.moveTo((defect.x + pore.dx + pore.size) * width, (defect.y + pore.dy) * height);
-            octx.arc((defect.x + pore.dx) * width, (defect.y + pore.dy) * height, pore.size * width, 0, Math.PI * 2);
-          });
-        } else if (defect.type === 'slagInclusion' && defect.length) {
-          // Slag inclusion ellipse
-          const radiusX = (defect.length / 2) * width;
-          const radiusY = (defect.width / 2) * height;
-          octx.save();
-          octx.translate(defect.x * width, defect.y * height);
-          octx.rotate(defect.angle || 0);
-          octx.ellipse(0, 0, radiusX, radiusY, 0, 0, Math.PI * 2);
-          octx.restore();
-        } else {
-          // Porosità singola o fallback
-          const radius = (defect.size || 0.01) * width;
-          octx.arc(defect.x * width, defect.y * height, radius, 0, Math.PI * 2);
-        }
-        octx.stroke();
-        octx.setLineDash([]);
-        
-        // Etichetta del tipo di difetto - use translations
-        octx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        octx.font = 'bold 10px monospace';
-        octx.fillText((t[defect.type] || defect.type).toUpperCase(), defect.x * width + 15, defect.y * height - 10);
-      });
-    }
+    // NOTE: In learning mode, NO hints are shown - user must find defects independently
+    // Hints are only available in teaching mode
     
     // Draw marked defects (selection rectangles) - different behavior per mode
     if ((mode === 'learning' || mode === 'exam') && examStarted) {
@@ -6493,7 +6416,7 @@ ID Certificato: ${user.id}-${exam.date}
             </div>
           </div>
 
-          {mode === 'training' && (
+          {mode === 'teaching' && (
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={showHints} onChange={(e) => setShowHints(e.target.checked)} className="w-4 h-4" />
               <span className="text-sm">{t.showHints}</span>
