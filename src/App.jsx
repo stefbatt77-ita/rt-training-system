@@ -34,7 +34,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 const COPYRIGHT_OWNER = "Stefano Battisti - RT Training";
 const COPYRIGHT_TEXT = `© ${CURRENT_YEAR} ${COPYRIGHT_OWNER}. All rights reserved.`;
 const CONTACT_EMAIL = "rtsymulationtrainingfeedback@gmail.com";
-const APP_VERSION = "2.0.0-beta";
+const APP_VERSION = "2.0.1-beta";
 
 // Storage Helper
 const storage = {
@@ -3286,18 +3286,49 @@ const XRaySimulator = ({ onExamComplete }) => {
     for (let i = 0; i < numDefects; i++) {
       const type = types[Math.floor(Math.random() * types.length)];
       
-      // Position calculation based on specimen type
+      // Position calculation based on specimen type AND defect type
       let baseX, baseY;
       if (specimenType === 'weld') {
-        // Position defects in weld zone or HAZ
-        const zone = Math.random();
-        if (zone < 0.6) {
-          // 60% in weld bead center
-          baseX = weldCenterX + (Math.random() - 0.5) * weldWidth;
-        } else {
-          // 40% in HAZ (either side)
+        // ═══════════════════════════════════════════════════════════════════════════
+        // WELD DEFECT POSITIONING - Physically accurate placement
+        // ═══════════════════════════════════════════════════════════════════════════
+        
+        // Defects that can ONLY occur at specific locations:
+        // - lackOfFusion: ONLY at fusion line (weld toe) - between weld and base metal
+        // - undercut: ONLY at weld toe
+        // - underfill: ONLY at weld centerline
+        // - alignedPorosity: in weld bead
+        // - slagInclusion: in weld bead or between passes
+        // - crack/porosity: anywhere in weld zone including HAZ
+        
+        if (type === 'lackOfFusion') {
+          // Lack of fusion: MUST be at fusion line (weld toe)
+          // This is where weld metal meets base metal
           const side = Math.random() < 0.5 ? -1 : 1;
-          baseX = weldCenterX + side * (weldWidth/2 + Math.random() * hazWidth);
+          baseX = weldCenterX + side * (weldWidth / 2); // Exactly at weld toe
+          // Small random offset to simulate slight position variation
+          baseX += (Math.random() - 0.5) * 0.008;
+        } else if (type === 'undercut') {
+          // Undercut: at weld toe (handled in switch case, but set approximate position)
+          const side = Math.random() < 0.5 ? -1 : 1;
+          baseX = weldCenterX + side * (weldWidth / 2);
+        } else if (type === 'underfill') {
+          // Underfill: at weld centerline
+          baseX = weldCenterX + (Math.random() - 0.5) * 0.01;
+        } else if (type === 'alignedPorosity' || type === 'slagInclusion') {
+          // These occur IN the weld bead, not in HAZ
+          baseX = weldCenterX + (Math.random() - 0.5) * weldWidth * 0.8;
+        } else {
+          // General defects (crack, porosity): can be in weld or HAZ
+          const zone = Math.random();
+          if (zone < 0.6) {
+            // 60% in weld bead
+            baseX = weldCenterX + (Math.random() - 0.5) * weldWidth;
+          } else {
+            // 40% in HAZ (either side) - only for crack/porosity
+            const side = Math.random() < 0.5 ? -1 : 1;
+            baseX = weldCenterX + side * (weldWidth/2 + Math.random() * hazWidth);
+          }
         }
         baseY = Math.random() * 0.6 + 0.2;
       } else {
@@ -5157,8 +5188,8 @@ const XRaySimulator = ({ onExamComplete }) => {
       octx.fillText('ZTA', (weldCenterX + weldWidth/2 + hazWidth/2) * width, 15);
     }
     
-    // Draw teaching mode hints (highlighted defects)
-    if (mode === 'teaching') {
+    // Draw teaching mode hints (highlighted defects) - only if showHints is enabled
+    if (mode === 'teaching' && showHints) {
       defects.forEach(defect => {
         // Bright yellow outline for teaching mode
         octx.strokeStyle = 'rgba(255, 220, 0, 0.9)';
@@ -6488,7 +6519,7 @@ ID Certificato: ${user.id}-${exam.date}
           {mode === 'teaching' && (
             <div className="bg-purple-900 border-t border-purple-700 px-4 py-2">
               <p className="text-sm text-purple-200">
-                <span className="font-semibold">Modalità Insegnamento</span> — Difetti e IQI evidenziati, parametri ottimali applicati
+                <span className="font-semibold">Modalità Insegnamento</span> — {showHints ? 'Difetti evidenziati' : 'Difetti nascosti (usa checkbox per mostrarli)'}, parametri ottimali applicati
               </p>
               <p className="text-xs text-purple-300/70 mt-1">{t.mouseControlsHint}</p>
             </div>
@@ -6576,8 +6607,10 @@ ID Certificato: ${user.id}-${exam.date}
   );
 };
 
-// Exam Review Modal
+// Exam Review Modal - Shows 5 separate correction sheets, one per image
 const ExamReviewModal = ({ exam, onClose, t }) => {
+  const [currentImageView, setCurrentImageView] = useState(0);
+  
   if (!exam || !exam.reviewData) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
@@ -6592,22 +6625,46 @@ const ExamReviewModal = ({ exam, onClose, t }) => {
   }
   
   const { defects, markedDefects } = exam.reviewData;
+  const imageCount = exam.imageCount || 5;
   
-  // Calculate statistics
-  const missedDefects = defects.filter(d => !d.detected);
-  const correctMarks = markedDefects.filter(md => md.isCorrectPosition && md.isCorrectType);
-  const wrongTypeMarks = markedDefects.filter(md => md.isCorrectPosition && !md.isCorrectType);
-  const falsePositiveMarks = markedDefects.filter(md => !md.isCorrectPosition);
+  // Group defects and marks by image
+  const imageData = [];
+  for (let i = 1; i <= imageCount; i++) {
+    const imgDefects = defects.filter(d => d.imageIndex === i);
+    const imgMarks = markedDefects.filter(m => m.imageIndex === i);
+    
+    const missed = imgDefects.filter(d => !d.detected).length;
+    const correct = imgMarks.filter(m => m.isCorrectPosition && m.isCorrectType).length;
+    const wrongType = imgMarks.filter(m => m.isCorrectPosition && !m.isCorrectType).length;
+    const falsePos = imgMarks.filter(m => !m.isCorrectPosition).length;
+    
+    imageData.push({
+      index: i,
+      defects: imgDefects,
+      marks: imgMarks,
+      stats: { missed, correct, wrongType, falsePos, total: imgDefects.length }
+    });
+  }
+  
+  // Overall stats
+  const totalStats = {
+    correct: markedDefects.filter(m => m.isCorrectPosition && m.isCorrectType).length,
+    wrongType: markedDefects.filter(m => m.isCorrectPosition && !m.isCorrectType).length,
+    missed: defects.filter(d => !d.detected).length,
+    falsePos: markedDefects.filter(m => !m.isCorrectPosition).length
+  };
+  
+  const currentImage = imageData[currentImageView];
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-lg border border-gray-600 max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-gray-800 rounded-lg border border-gray-600 max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gray-900 px-6 py-4 border-b border-gray-700 flex items-center justify-between">
+        <div className="bg-gray-900 px-6 py-4 border-b border-gray-700 flex items-center justify-between flex-wrap gap-4">
           <div>
             <h2 className="text-xl font-bold text-white">{t.reviewExamTitle}</h2>
             <p className="text-sm text-gray-400">
-              {exam.material} • {exam.thickness}mm • {exam.kV}kV • {new Date(exam.date).toLocaleDateString()}
+              {exam.material} • {exam.thickness}mm • {exam.kV}kV • {exam.specimenType === 'weld' ? '🔥 Saldatura' : '📋 Piastra'} • {new Date(exam.date).toLocaleDateString()}
             </p>
           </div>
           <div className="text-right">
@@ -6618,133 +6675,210 @@ const ExamReviewModal = ({ exam, onClose, t }) => {
           </div>
         </div>
         
-        {/* Content */}
+        {/* Image Navigation Tabs */}
+        <div className="bg-gray-850 border-b border-gray-700 px-4 py-2 flex items-center gap-2 overflow-x-auto">
+          <span className="text-sm text-gray-400 mr-2">Immagine:</span>
+          {imageData.map((img, idx) => {
+            const hasErrors = img.stats.missed > 0 || img.stats.falsePos > 0 || img.stats.wrongType > 0;
+            const isPerfect = img.stats.correct === img.stats.total && img.stats.falsePos === 0;
+            return (
+              <button
+                key={idx}
+                onClick={() => setCurrentImageView(idx)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+                  currentImageView === idx 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                <span>{idx + 1}</span>
+                {isPerfect && <span className="text-green-400">✓</span>}
+                {!isPerfect && hasErrors && <span className="text-yellow-400">!</span>}
+                <span className="text-xs opacity-70">
+                  ({img.stats.correct}/{img.stats.total})
+                </span>
+              </button>
+            );
+          })}
+          <div className="ml-auto text-xs text-gray-500">
+            {t.imageResults || 'Risultati per immagine'}
+          </div>
+        </div>
+        
+        {/* Content - Current Image */}
         <div className="flex-1 overflow-auto p-6">
-          {/* Visual Map */}
+          {/* Image Header */}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-white">
+              📷 Immagine {currentImage.index} di {imageCount}
+            </h3>
+            <div className="flex gap-2">
+              <span className="px-2 py-1 bg-gray-700 rounded text-xs">
+                Difetti: {currentImage.stats.total}
+              </span>
+              <span className="px-2 py-1 bg-green-900 rounded text-xs text-green-300">
+                ✓ {currentImage.stats.correct}
+              </span>
+              {currentImage.stats.wrongType > 0 && (
+                <span className="px-2 py-1 bg-yellow-900 rounded text-xs text-yellow-300">
+                  ~ {currentImage.stats.wrongType}
+                </span>
+              )}
+              {currentImage.stats.missed > 0 && (
+                <span className="px-2 py-1 bg-red-900 rounded text-xs text-red-300">
+                  ✗ {currentImage.stats.missed}
+                </span>
+              )}
+              {currentImage.stats.falsePos > 0 && (
+                <span className="px-2 py-1 bg-purple-900 rounded text-xs text-purple-300">
+                  FP {currentImage.stats.falsePos}
+                </span>
+              )}
+            </div>
+          </div>
+          
+          {/* Visual Map for Current Image */}
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-white mb-3">Mappa Visuale</h3>
-            <div className="relative bg-gray-900 rounded-lg border border-gray-700" style={{ paddingBottom: '75%' }}>
-              <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full">
+            <div className="relative bg-gray-900 rounded-lg border border-gray-700" style={{ paddingBottom: '60%' }}>
+              <svg viewBox="0 0 100 75" className="absolute inset-0 w-full h-full">
                 {/* Background grid */}
                 <defs>
-                  <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                  <pattern id={`grid-${currentImage.index}`} width="10" height="10" patternUnits="userSpaceOnUse">
                     <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#374151" strokeWidth="0.2"/>
                   </pattern>
                 </defs>
-                <rect width="100" height="100" fill="url(#grid)" />
+                <rect width="100" height="75" fill={`url(#grid-${currentImage.index})`} />
+                
+                {/* Image number watermark */}
+                <text x="50" y="10" textAnchor="middle" fill="#4b5563" fontSize="8" fontWeight="bold">
+                  IMMAGINE {currentImage.index}
+                </text>
                 
                 {/* Actual defects */}
-                {defects.map((defect, idx) => (
+                {currentImage.defects.map((defect, idx) => (
                   <g key={`defect-${idx}`}>
                     <circle 
                       cx={defect.x * 100} 
-                      cy={defect.y * 100} 
-                      r={Math.max(2, (defect.size || 0.02) * 100)}
+                      cy={defect.y * 75} 
+                      r={Math.max(2.5, (defect.size || 0.02) * 80)}
                       fill={defect.detected ? "#22c55e" : "#ef4444"}
                       fillOpacity="0.3"
                       stroke={defect.detected ? "#22c55e" : "#ef4444"}
-                      strokeWidth="0.5"
+                      strokeWidth="0.8"
                     />
                     <text 
                       x={defect.x * 100} 
-                      y={defect.y * 100 - 3} 
+                      y={defect.y * 75 - 4} 
                       textAnchor="middle" 
                       fill={defect.detected ? "#86efac" : "#fca5a5"}
-                      fontSize="2.5"
+                      fontSize="3"
+                      fontWeight="bold"
                     >
                       {t[defect.type] || defect.type}
                     </text>
+                    {!defect.detected && (
+                      <text 
+                        x={defect.x * 100} 
+                        y={defect.y * 75 + 5} 
+                        textAnchor="middle" 
+                        fill="#fca5a5"
+                        fontSize="2.5"
+                      >
+                        MANCATO
+                      </text>
+                    )}
                   </g>
                 ))}
                 
                 {/* User selections */}
-                {markedDefects.map((mark, idx) => (
-                  <rect 
-                    key={`mark-${idx}`}
-                    x={(mark.x - mark.width/2) * 100} 
-                    y={(mark.y - mark.height/2) * 100} 
-                    width={mark.width * 100}
-                    height={mark.height * 100}
-                    fill="none"
-                    stroke={mark.isCorrectPosition ? (mark.isCorrectType ? "#22c55e" : "#eab308") : "#ef4444"}
-                    strokeWidth="0.5"
-                    strokeDasharray={mark.isCorrectPosition ? "none" : "2,1"}
-                  />
+                {currentImage.marks.map((mark, idx) => (
+                  <g key={`mark-${idx}`}>
+                    <rect 
+                      x={(mark.x - mark.width/2) * 100} 
+                      y={(mark.y - mark.height/2) * 75} 
+                      width={mark.width * 100}
+                      height={mark.height * 75}
+                      fill="none"
+                      stroke={mark.isCorrectPosition ? (mark.isCorrectType ? "#22c55e" : "#eab308") : "#ef4444"}
+                      strokeWidth="0.8"
+                      strokeDasharray={mark.isCorrectPosition ? "none" : "2,1"}
+                    />
+                    {!mark.isCorrectPosition && (
+                      <text 
+                        x={(mark.x) * 100} 
+                        y={(mark.y) * 75} 
+                        textAnchor="middle" 
+                        fill="#ef4444"
+                        fontSize="2.5"
+                        fontWeight="bold"
+                      >
+                        FP
+                      </text>
+                    )}
+                  </g>
                 ))}
               </svg>
             </div>
-            <div className="flex gap-4 mt-2 text-xs">
+            
+            {/* Legend */}
+            <div className="flex gap-4 mt-2 text-xs flex-wrap">
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-500"></span> {t.correct}</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-yellow-500"></span> Tipo errato</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-500"></span> {t.missed} / Falso positivo</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-500"></span> {t.missed}</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 border border-red-500 border-dashed"></span> Falso positivo</span>
             </div>
           </div>
           
-          {/* Statistics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-green-900/30 border border-green-700 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-green-400">{correctMarks.length}</p>
-              <p className="text-sm text-green-300">{t.correct}</p>
-            </div>
-            <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-yellow-400">{wrongTypeMarks.length}</p>
-              <p className="text-sm text-yellow-300">Tipo Errato</p>
-            </div>
-            <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-red-400">{missedDefects.length}</p>
-              <p className="text-sm text-red-300">{t.missed}</p>
-            </div>
-            <div className="bg-purple-900/30 border border-purple-700 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-purple-400">{falsePositiveMarks.length}</p>
-              <p className="text-sm text-purple-300">{t.falsePositives}</p>
-            </div>
-          </div>
-          
-          {/* Details */}
-          <div className="grid md:grid-cols-2 gap-6">
+          {/* Details for Current Image */}
+          <div className="grid md:grid-cols-2 gap-4 mb-6">
             {/* Actual Defects */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-3">{t.actualDefects} ({defects.length})</h3>
-              <div className="space-y-2 max-h-48 overflow-auto">
-                {defects.map((defect, idx) => (
-                  <div key={idx} className={`p-3 rounded-lg border ${defect.detected ? 'bg-green-900/20 border-green-700' : 'bg-red-900/20 border-red-700'}`}>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-white">{t[defect.type] || defect.type}</span>
-                      <span className={`text-xs px-2 py-1 rounded ${defect.detected ? 'bg-green-700 text-green-200' : 'bg-red-700 text-red-200'}`}>
-                        {defect.detected ? '✓ Trovato' : '✗ Mancato'}
-                      </span>
+            <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
+              <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+                🎯 {t.actualDefects} ({currentImage.defects.length})
+              </h4>
+              <div className="space-y-2 max-h-40 overflow-auto">
+                {currentImage.defects.length === 0 ? (
+                  <p className="text-gray-500 text-sm text-center py-2">Immagine senza difetti (test falsi positivi)</p>
+                ) : (
+                  currentImage.defects.map((defect, idx) => (
+                    <div key={idx} className={`p-2 rounded border text-sm ${defect.detected ? 'bg-green-900/20 border-green-700' : 'bg-red-900/20 border-red-700'}`}>
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-white">{t[defect.type] || defect.type}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded ${defect.detected ? 'bg-green-700 text-green-200' : 'bg-red-700 text-red-200'}`}>
+                          {defect.detected ? '✓' : '✗'}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Posizione: ({(defect.x * 100).toFixed(0)}%, {(defect.y * 100).toFixed(0)}%)
-                    </p>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
             
             {/* Your Selections */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-3">{t.yourSelections} ({markedDefects.length})</h3>
-              <div className="space-y-2 max-h-48 overflow-auto">
-                {markedDefects.length === 0 ? (
-                  <p className="text-gray-400 text-center py-4">Nessuna selezione effettuata</p>
+            <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
+              <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+                ✏️ {t.yourSelections} ({currentImage.marks.length})
+              </h4>
+              <div className="space-y-2 max-h-40 overflow-auto">
+                {currentImage.marks.length === 0 ? (
+                  <p className="text-gray-500 text-sm text-center py-2">Nessuna selezione</p>
                 ) : (
-                  markedDefects.map((mark, idx) => (
-                    <div key={idx} className={`p-3 rounded-lg border ${
+                  currentImage.marks.map((mark, idx) => (
+                    <div key={idx} className={`p-2 rounded border text-sm ${
                       mark.isCorrectPosition && mark.isCorrectType ? 'bg-green-900/20 border-green-700' :
                       mark.isCorrectPosition ? 'bg-yellow-900/20 border-yellow-700' :
                       'bg-red-900/20 border-red-700'
                     }`}>
                       <div className="flex justify-between items-center">
                         <span className="font-medium text-white">{t[mark.type] || mark.type}</span>
-                        <span className={`text-xs px-2 py-1 rounded ${
+                        <span className={`text-xs px-2 py-0.5 rounded ${
                           mark.isCorrectPosition && mark.isCorrectType ? 'bg-green-700 text-green-200' :
                           mark.isCorrectPosition ? 'bg-yellow-700 text-yellow-200' :
                           'bg-red-700 text-red-200'
                         }`}>
-                          {mark.isCorrectPosition && mark.isCorrectType ? '✓ Corretto' :
-                           mark.isCorrectPosition ? `Tipo errato (era: ${t[mark.actualType] || mark.actualType})` :
-                           '✗ Falso positivo'}
+                          {mark.isCorrectPosition && mark.isCorrectType ? '✓' :
+                           mark.isCorrectPosition ? `→ ${t[mark.actualType] || mark.actualType}` :
+                           'FP'}
                         </span>
                       </div>
                     </div>
@@ -6753,16 +6887,60 @@ const ExamReviewModal = ({ exam, onClose, t }) => {
               </div>
             </div>
           </div>
+          
+          {/* Overall Statistics */}
+          <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg p-4 border border-gray-600">
+            <h4 className="font-semibold text-white mb-3">📊 Riepilogo Totale (Tutte le {imageCount} immagini)</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-green-900/30 border border-green-700 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-green-400">{totalStats.correct}</p>
+                <p className="text-xs text-green-300">{t.correct}</p>
+              </div>
+              <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-yellow-400">{totalStats.wrongType}</p>
+                <p className="text-xs text-yellow-300">Tipo Errato</p>
+              </div>
+              <div className="bg-red-900/30 border border-red-700 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-red-400">{totalStats.missed}</p>
+                <p className="text-xs text-red-300">{t.missed}</p>
+              </div>
+              <div className="bg-purple-900/30 border border-purple-700 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-purple-400">{totalStats.falsePos}</p>
+                <p className="text-xs text-purple-300">{t.falsePositives}</p>
+              </div>
+            </div>
+          </div>
         </div>
         
-        {/* Footer */}
-        <div className="bg-gray-900 px-6 py-4 border-t border-gray-700">
+        {/* Footer with Navigation */}
+        <div className="bg-gray-900 px-6 py-4 border-t border-gray-700 flex items-center justify-between">
           <button 
-            onClick={onClose} 
-            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition"
+            onClick={() => setCurrentImageView(prev => Math.max(0, prev - 1))}
+            disabled={currentImageView === 0}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white transition flex items-center gap-2"
           >
-            {t.closeReview}
+            ← Precedente
           </button>
+          
+          <span className="text-gray-400 text-sm">
+            {currentImageView + 1} / {imageCount}
+          </span>
+          
+          {currentImageView < imageCount - 1 ? (
+            <button 
+              onClick={() => setCurrentImageView(prev => Math.min(imageCount - 1, prev + 1))}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition flex items-center gap-2"
+            >
+              Successiva →
+            </button>
+          ) : (
+            <button 
+              onClick={onClose} 
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white font-semibold transition"
+            >
+              {t.closeReview} ✓
+            </button>
+          )}
         </div>
       </div>
     </div>
