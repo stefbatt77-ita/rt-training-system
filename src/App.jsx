@@ -34,7 +34,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 const COPYRIGHT_OWNER = "Stefano Battisti - RT Training";
 const COPYRIGHT_TEXT = `© ${CURRENT_YEAR} ${COPYRIGHT_OWNER}. All rights reserved.`;
 const CONTACT_EMAIL = "rtsymulationtrainingfeedback@gmail.com";
-const APP_VERSION = "2.0.1-beta";
+const APP_VERSION = "2.0.2-beta";
 
 // Storage Helper
 const storage = {
@@ -6448,10 +6448,22 @@ ID Certificato: ${user.id}-${exam.date}
           </div>
 
           {mode === 'teaching' && (
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={showHints} onChange={(e) => setShowHints(e.target.checked)} className="w-4 h-4" />
-              <span className="text-sm">{t.showHints}</span>
-            </label>
+            <div className="bg-purple-900/30 border border-purple-600 rounded-lg p-3">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={showHints} 
+                  onChange={(e) => setShowHints(e.target.checked)} 
+                  className="w-5 h-5 accent-purple-500" 
+                />
+                <div>
+                  <span className="text-sm font-medium text-purple-200">{t.showHints}</span>
+                  <p className="text-xs text-purple-400">
+                    {showHints ? '👁️ Difetti evidenziati' : '🔍 Difetti nascosti - trova da solo!'}
+                  </p>
+                </div>
+              </label>
+            </div>
           )}
           
           {mode === 'exam' && examStarted && markedDefects.length > 0 && (
