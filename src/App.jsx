@@ -51,6 +51,7 @@ const BETA_LIMITS = {
 };
 const PREMIUM_CONTACT_EMAIL = "rtsymulationtrainingfeedback@gmail.com";
 const PREMIUM_MAILTO = `mailto:${PREMIUM_CONTACT_EMAIL}?subject=Richiesta%20Abbonamento%20Premium%20RT%20Training&body=Buongiorno%2C%0A%0ASono%20interessato%20all'abbonamento%20Premium%20di%20RT%20Training.%0A%0ANome%3A%20%0AAzienda%3A%20%0AEmail%3A%20%0A%0AGrazie`;
+const BETA_REGISTRATION_FORM = "https://docs.google.com/forms/d/e/1FAIpQLScqasLjLwQQA86Pcu-hlGzBVEEfKx4e41kcC-XOTwhBMnGMFw/viewform";
 
 // Storage Helper
 const storage = {
@@ -406,8 +407,11 @@ const translations = {
     // Beta Limited Version
     betaLimited: "BETA LIMITED",
     betaWelcome: "Welcome to RT Training Beta",
-    betaEmailGate: "Enter your email to access the limited Beta",
+    betaEmailGate: "Already registered? Enter your email to access",
     betaAccessButton: "Access Beta",
+    betaRegisterFirst: "First time? Register here",
+    betaRegisterButton: "Register to Access Beta",
+    betaAlreadyRegistered: "Already registered?",
     betaNoSave: "Progress will NOT be saved",
     betaLimitations: "Beta Limitations",
     betaMaxExams: "Maximum 5 exams",
@@ -759,8 +763,11 @@ const translations = {
     // Beta Limited Version
     betaLimited: "BETA LIMITATA",
     betaWelcome: "Benvenuto in RT Training Beta",
-    betaEmailGate: "Inserisci la tua email per accedere alla Beta limitata",
+    betaEmailGate: "Già registrato? Inserisci la tua email per accedere",
     betaAccessButton: "Accedi alla Beta",
+    betaRegisterFirst: "Prima volta? Registrati qui",
+    betaRegisterButton: "Registrati per Accedere",
+    betaAlreadyRegistered: "Già registrato?",
     betaNoSave: "I progressi NON verranno salvati",
     betaLimitations: "Limitazioni Beta",
     betaMaxExams: "Massimo 5 esami",
@@ -1510,11 +1517,41 @@ const LoginScreen = () => {
         {/* Welcome Message */}
         <div className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-4 mb-6">
           <h2 className="text-lg font-semibold text-blue-300 mb-2">{t.betaWelcome}</h2>
-          <p className="text-gray-300 text-sm">{t.betaEmailGate}</p>
+          <p className="text-gray-300 text-sm">Compila il form di registrazione per accedere alla Beta gratuita.</p>
         </div>
 
-        {/* Email Form */}
-        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+        {/* Step 1: Google Form Registration */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center text-white text-sm font-bold">1</div>
+            <h3 className="text-sm font-semibold text-white">{t.betaRegisterFirst}</h3>
+          </div>
+          <a 
+            href={BETA_REGISTRATION_FORM}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold py-3 px-6 rounded-lg transition text-center"
+          >
+            📋 {t.betaRegisterButton}
+          </a>
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex-1 h-px bg-gray-700"></div>
+          <span className="text-xs text-gray-500">{t.betaAlreadyRegistered}</span>
+          <div className="flex-1 h-px bg-gray-700"></div>
+        </div>
+
+        {/* Step 2: Email Access */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">2</div>
+            <h3 className="text-sm font-semibold text-white">{t.betaEmailGate}</h3>
+          </div>
+          
+          {/* Email Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">{t.email}</label>
             <input 
@@ -1551,7 +1588,8 @@ const LoginScreen = () => {
               </>
             )}
           </button>
-        </form>
+          </form>
+        </div>
 
         {/* Warning: No Save */}
         <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-3 mb-6">
