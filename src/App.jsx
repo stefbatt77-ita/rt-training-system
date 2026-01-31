@@ -34,7 +34,23 @@ const CURRENT_YEAR = new Date().getFullYear();
 const COPYRIGHT_OWNER = "Stefano Battisti - RT Training";
 const COPYRIGHT_TEXT = `© ${CURRENT_YEAR} ${COPYRIGHT_OWNER}. All rights reserved.`;
 const CONTACT_EMAIL = "rtsymulationtrainingfeedback@gmail.com";
-const APP_VERSION = "2.0.2-beta";
+const APP_VERSION = "2.1.0-beta-limited";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BETA LIMITED VERSION CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════
+const IS_BETA_LIMITED = true;
+const BETA_LIMITS = {
+  maxExams: 5,                    // Max 5 exams total
+  sessionDuration: 60 * 60,       // 1 hour in seconds
+  examImageCount: 3,              // 3 images per exam (not 5)
+  allowedMaterials: ['aluminum', 'titanium'], // No Inconel
+  allowWeld: false,               // Weld is Premium
+  allowCertificates: false,       // Certificates are Premium
+  allowInconel: false             // Inconel is Premium
+};
+const PREMIUM_CONTACT_EMAIL = "rtsymulationtrainingfeedback@gmail.com";
+const PREMIUM_MAILTO = `mailto:${PREMIUM_CONTACT_EMAIL}?subject=Richiesta%20Abbonamento%20Premium%20RT%20Training&body=Buongiorno%2C%0A%0ASono%20interessato%20all'abbonamento%20Premium%20di%20RT%20Training.%0A%0ANome%3A%20%0AAzienda%3A%20%0AEmail%3A%20%0A%0AGrazie`;
 
 // Storage Helper
 const storage = {
@@ -386,7 +402,42 @@ const translations = {
     // Terms of Service
     termsOfService: "Terms of Service",
     acceptTerms: "I Accept the Terms",
-    decline: "Decline"
+    decline: "Decline",
+    // Beta Limited Version
+    betaLimited: "BETA LIMITED",
+    betaWelcome: "Welcome to RT Training Beta",
+    betaEmailGate: "Enter your email to access the limited Beta",
+    betaAccessButton: "Access Beta",
+    betaNoSave: "Progress will NOT be saved",
+    betaLimitations: "Beta Limitations",
+    betaMaxExams: "Maximum 5 exams",
+    betaNoWeld: "Weld specimens not available",
+    betaNoCertificates: "Certificates not available",
+    betaNoInconel: "Inconel material not available",
+    betaSessionTime: "1 hour session",
+    betaExamsRemaining: "Exams remaining",
+    betaExamsUsed: "exams used",
+    betaLimitReached: "Exam Limit Reached",
+    betaLimitMessage: "You have used all 5 exams available in the Beta. Subscribe to Premium for unlimited access!",
+    premiumFeature: "Premium Feature",
+    premiumRequired: "This feature requires a Premium subscription",
+    premiumWeldMessage: "Weld specimen analysis is a Premium feature. Subscribe to access realistic weld defect training!",
+    premiumCertMessage: "Downloadable certificates are a Premium feature. Subscribe to get official training certificates!",
+    premiumInconelMessage: "Inconel material is a Premium feature. Subscribe to train on all aerospace materials!",
+    upgradeToPremium: "Upgrade to Premium",
+    contactForPremium: "Contact for Premium",
+    premiumBenefits: "Premium Benefits",
+    premiumUnlimitedExams: "Unlimited exams",
+    premiumAllMaterials: "All materials (Al, Ti, Inconel)",
+    premiumWeldSpecimens: "Weld specimens with realistic defects",
+    premiumCertificates: "Downloadable PDF certificates",
+    premiumSavedProgress: "Permanently saved progress",
+    premiumPriority: "Priority support",
+    emailRequired: "Email is required",
+    emailInvalid: "Please enter a valid email",
+    sessionExpired: "Session Expired",
+    sessionExpiredMessage: "Your 1-hour Beta session has expired. Start a new session to continue.",
+    startNewSession: "Start New Session"
   },
   it: {
     title: "Simulatore Radiografia Digitale RT",
@@ -704,270 +755,199 @@ const translations = {
     // Terms of Service
     termsOfService: "Termini di Servizio",
     acceptTerms: "Accetto i Termini",
-    decline: "Rifiuta"
+    decline: "Rifiuta",
+    // Beta Limited Version
+    betaLimited: "BETA LIMITATA",
+    betaWelcome: "Benvenuto in RT Training Beta",
+    betaEmailGate: "Inserisci la tua email per accedere alla Beta limitata",
+    betaAccessButton: "Accedi alla Beta",
+    betaNoSave: "I progressi NON verranno salvati",
+    betaLimitations: "Limitazioni Beta",
+    betaMaxExams: "Massimo 5 esami",
+    betaNoWeld: "Campioni saldati non disponibili",
+    betaNoCertificates: "Certificati non disponibili",
+    betaNoInconel: "Materiale Inconel non disponibile",
+    betaSessionTime: "Sessione di 1 ora",
+    betaExamsRemaining: "Esami rimanenti",
+    betaExamsUsed: "esami effettuati",
+    betaLimitReached: "Limite Esami Raggiunto",
+    betaLimitMessage: "Hai utilizzato tutti i 5 esami disponibili nella Beta. Abbonati a Premium per accesso illimitato!",
+    premiumFeature: "Funzione Premium",
+    premiumRequired: "Questa funzione richiede un abbonamento Premium",
+    premiumWeldMessage: "L'analisi di campioni saldati è una funzione Premium. Abbonati per accedere al training su difetti realistici di saldatura!",
+    premiumCertMessage: "I certificati scaricabili sono una funzione Premium. Abbonati per ottenere certificati ufficiali di training!",
+    premiumInconelMessage: "Il materiale Inconel è una funzione Premium. Abbonati per allenarti su tutti i materiali aerospaziali!",
+    upgradeToPremium: "Passa a Premium",
+    contactForPremium: "Contatta per Premium",
+    premiumBenefits: "Vantaggi Premium",
+    premiumUnlimitedExams: "Esami illimitati",
+    premiumAllMaterials: "Tutti i materiali (Al, Ti, Inconel)",
+    premiumWeldSpecimens: "Campioni saldati con difetti realistici",
+    premiumCertificates: "Certificati PDF scaricabili",
+    premiumSavedProgress: "Progressi salvati permanentemente",
+    premiumPriority: "Supporto prioritario",
+    emailRequired: "Email obbligatoria",
+    emailInvalid: "Inserisci un'email valida",
+    sessionExpired: "Sessione Scaduta",
+    sessionExpiredMessage: "La tua sessione Beta di 1 ora è scaduta. Avvia una nuova sessione per continuare.",
+    startNewSession: "Avvia Nuova Sessione"
   }
 };
 
 // Auth Context
 const AuthContext = createContext();
 
+// ═══════════════════════════════════════════════════════════════════════════
+// BETA LIMITED: Simplified Auth with Email Gate
+// ═══════════════════════════════════════════════════════════════════════════
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [singleSession, setSingleSession] = useState(null);
+  const [betaSession, setBetaSession] = useState(null);
 
   useEffect(() => {
-    checkAuth();
-    checkSingleSession();
+    checkBetaSession();
   }, []);
 
-  const checkAuth = async () => {
+  // Check for existing Beta session
+  const checkBetaSession = async () => {
     try {
-      const result = await storage.get('current_user');
+      const result = await storage.get('beta_session');
       if (result && result.value) {
-        setUser(JSON.parse(result.value));
+        const session = JSON.parse(result.value);
+        const now = Date.now();
+        const sessionAge = now - session.startTime;
+        
+        // Check if session is still valid (1 hour)
+        if (sessionAge < BETA_LIMITS.sessionDuration * 1000) {
+          setBetaSession(session);
+          setUser({
+            id: 'beta_' + session.startTime,
+            email: session.email,
+            username: 'Utente Beta',
+            role: 'student',
+            isBetaLimited: true,
+            examsUsed: session.examsUsed || 0,
+            sessionStartTime: session.startTime
+          });
+        } else {
+          // Session expired
+          await storage.delete('beta_session');
+        }
       }
     } catch (err) {
-      console.log('No active session');
+      console.log('No beta session');
     }
     setLoading(false);
   };
 
-  const checkSingleSession = async () => {
+  // Start Beta session with email
+  const startBetaSession = async (email) => {
     try {
-      const result = await storage.get('single_session');
-      if (result && result.value) {
-        const session = JSON.parse(result.value);
-        // Check if session is still valid
-        if (session.status === 'active' && session.expirationDate) {
-          const now = new Date();
-          const expiry = new Date(session.expirationDate);
-          if (now < expiry) {
-            setSingleSession(session);
-          } else {
-            // Session expired
-            session.status = 'expired';
-            await storage.set('single_session', JSON.stringify(session));
-            setSingleSession(session);
-          }
-        } else if (session.status === 'purchased') {
-          // Session purchased but not activated
-          setSingleSession(session);
-        }
+      // Validate email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        return { success: false, error: 'emailInvalid' };
       }
-    } catch (err) {
-      console.log('No single session');
-    }
-  };
 
-  const login = async (email, password) => {
-    try {
-      const usersResult = await storage.get('users_db');
-      const users = usersResult ? JSON.parse(usersResult.value) : [];
-      
-      const foundUser = users.find(u => u.email === email && u.password === password);
-      if (foundUser) {
-        const userSession = { ...foundUser, lastLogin: new Date().toISOString() };
-        delete userSession.password;
-        await storage.set('current_user', JSON.stringify(userSession));
-        setUser(userSession);
-        return { success: true };
-      }
-      return { success: false, error: 'Credenziali non valide' };
-    } catch (err) {
-      return { success: false, error: err.message };
-    }
-  };
-
-  const logout = async () => {
-    await storage.delete('current_user');
-    setUser(null);
-  };
-
-  const register = async (userData) => {
-    try {
-      const usersResult = await storage.get('users_db');
-      const users = usersResult ? JSON.parse(usersResult.value) : [];
-      
-      if (users.find(u => u.email === userData.email)) {
-        return { success: false, error: 'Email già esistente' };
-      }
-      
-      const newUser = {
-        id: Date.now().toString(),
-        ...userData,
-        createdAt: new Date().toISOString(),
-        exams: []
+      const now = Date.now();
+      const session = {
+        email: email,
+        startTime: now,
+        expirationTime: now + (BETA_LIMITS.sessionDuration * 1000),
+        examsUsed: 0,
+        emailsCollected: true
       };
+
+      await storage.set('beta_session', JSON.stringify(session));
       
-      users.push(newUser);
-      await storage.set('users_db', JSON.stringify(users));
+      // Also save email to a separate collection for marketing
+      try {
+        const emailsResult = await storage.get('beta_emails');
+        const emails = emailsResult ? JSON.parse(emailsResult.value) : [];
+        if (!emails.find(e => e.email === email)) {
+          emails.push({ email, date: new Date().toISOString() });
+          await storage.set('beta_emails', JSON.stringify(emails));
+        }
+      } catch (e) { /* ignore */ }
+
+      setBetaSession(session);
+      setUser({
+        id: 'beta_' + now,
+        email: email,
+        username: 'Utente Beta',
+        role: 'student',
+        isBetaLimited: true,
+        examsUsed: 0,
+        sessionStartTime: now
+      });
+
       return { success: true };
     } catch (err) {
       return { success: false, error: err.message };
     }
   };
 
-  // Purchase single session (simulated - in production would use Stripe)
-  const purchaseSingleSession = async (email) => {
-    try {
-      const sessionCode = 'SS-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-      const newSession = {
-        id: 'sess_' + Date.now(),
-        code: sessionCode,
-        email: email,
-        purchaseDate: new Date().toISOString(),
-        activationDate: null,
-        expirationDate: null,
-        status: 'purchased', // purchased | active | expired
-        durationMinutes: 120, // 2 hours
-        price: 9.90,
-        currency: 'EUR'
-      };
-      
-      await storage.set('single_session', JSON.stringify(newSession));
-      setSingleSession(newSession);
-      
-      return { success: true, session: newSession };
-    } catch (err) {
-      return { success: false, error: err.message };
+  // Increment exam count
+  const incrementExamCount = async () => {
+    if (!betaSession) return;
+    
+    const newCount = (betaSession.examsUsed || 0) + 1;
+    const updatedSession = { ...betaSession, examsUsed: newCount };
+    
+    await storage.set('beta_session', JSON.stringify(updatedSession));
+    setBetaSession(updatedSession);
+    
+    if (user) {
+      setUser({ ...user, examsUsed: newCount });
     }
+    
+    return newCount;
   };
 
-  // Activate single session - starts the 2 hour timer
-  const activateSingleSession = async () => {
-    try {
-      if (!singleSession || singleSession.status !== 'purchased') {
-        return { success: false, error: 'No session to activate' };
-      }
-      
-      const now = new Date();
-      const expiry = new Date(now.getTime() + singleSession.durationMinutes * 60 * 1000);
-      
-      const activatedSession = {
-        ...singleSession,
-        activationDate: now.toISOString(),
-        expirationDate: expiry.toISOString(),
-        status: 'active'
-      };
-      
-      await storage.set('single_session', JSON.stringify(activatedSession));
-      setSingleSession(activatedSession);
-      
-      // Create temporary user for the session
-      const tempUser = {
-        id: 'single_' + Date.now(),
-        email: singleSession.email,
-        username: 'Sessione Singola',
-        role: 'student',
-        isSingleSession: true,
-        sessionId: singleSession.id,
-        exams: []
-      };
-      
-      await storage.set('current_user', JSON.stringify(tempUser));
-      setUser(tempUser);
-      
-      return { success: true, session: activatedSession };
-    } catch (err) {
-      return { success: false, error: err.message };
-    }
+  // Get remaining exams
+  const getRemainingExams = () => {
+    const used = betaSession?.examsUsed || user?.examsUsed || 0;
+    return Math.max(0, BETA_LIMITS.maxExams - used);
   };
 
-  // Redeem a session code
-  const redeemSessionCode = async (code) => {
-    try {
-      const result = await storage.get('single_session');
-      if (result && result.value) {
-        const session = JSON.parse(result.value);
-        if (session.code === code && session.status === 'purchased') {
-          setSingleSession(session);
-          return { success: true, session };
-        }
-      }
-      return { success: false, error: 'Invalid code' };
-    } catch (err) {
-      return { success: false, error: err.message };
-    }
+  // Check if can take exam
+  const canTakeExam = () => {
+    return getRemainingExams() > 0;
   };
 
-  // Get remaining time in seconds
+  // Get session remaining time in seconds
   const getSessionRemainingTime = () => {
-    if (!singleSession || singleSession.status !== 'active' || !singleSession.expirationDate) {
-      return null;
-    }
-    const now = new Date();
-    const expiry = new Date(singleSession.expirationDate);
-    const remaining = Math.max(0, Math.floor((expiry - now) / 1000));
+    if (!betaSession) return null;
+    const now = Date.now();
+    const elapsed = now - betaSession.startTime;
+    const remaining = Math.max(0, BETA_LIMITS.sessionDuration - Math.floor(elapsed / 1000));
     return remaining;
   };
 
   // Check if session is active
   const isSessionActive = () => {
-    if (!singleSession) return false;
-    if (singleSession.status !== 'active') return false;
     const remaining = getSessionRemainingTime();
     return remaining !== null && remaining > 0;
   };
 
-  // Expire session
-  const expireSingleSession = async () => {
-    if (singleSession) {
-      const expiredSession = { ...singleSession, status: 'expired' };
-      await storage.set('single_session', JSON.stringify(expiredSession));
-      setSingleSession(expiredSession);
-    }
+  // Logout / End session
+  const logout = async () => {
+    await storage.delete('beta_session');
+    setBetaSession(null);
+    setUser(null);
   };
 
-  // Clear single session
-  const clearSingleSession = async () => {
-    await storage.delete('single_session');
-    setSingleSession(null);
-  };
-
-  // Start free demo - 15 minutes, no registration needed
-  const startFreeDemo = async () => {
-    try {
-      const now = new Date();
-      const expiry = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes
-      
-      const demoSession = {
-        id: 'demo_' + Date.now(),
-        code: 'DEMO',
-        email: 'demo@demo.com',
-        purchaseDate: now.toISOString(),
-        activationDate: now.toISOString(),
-        expirationDate: expiry.toISOString(),
-        status: 'active',
-        durationMinutes: 15,
-        price: 0,
-        currency: 'EUR',
-        isDemo: true
-      };
-      
-      await storage.set('single_session', JSON.stringify(demoSession));
-      setSingleSession(demoSession);
-      
-      // Create temporary demo user
-      const demoUser = {
-        id: 'demo_' + Date.now(),
-        email: 'demo@demo.com',
-        username: 'Demo User',
-        role: 'student',
-        isSingleSession: true,
-        isDemo: true,
-        sessionId: demoSession.id,
-        exams: []
-      };
-      
-      await storage.set('current_user', JSON.stringify(demoUser));
-      setUser(demoUser);
-      
-      return { success: true };
-    } catch (err) {
-      return { success: false, error: err.message };
-    }
-  };
+  // Stub functions for compatibility
+  const login = async () => ({ success: false, error: 'Use startBetaSession instead' });
+  const register = async () => ({ success: false, error: 'Registration disabled in Beta' });
+  const singleSession = null;
+  const purchaseSingleSession = async () => ({ success: false });
+  const activateSingleSession = async () => ({ success: false });
+  const redeemSessionCode = async () => ({ success: false });
+  const expireSingleSession = async () => {};
+  const clearSingleSession = async () => {};
+  const startFreeDemo = async () => ({ success: false });
 
   return (
     <AuthContext.Provider value={{ 
@@ -984,13 +964,18 @@ const AuthProvider = ({ children }) => {
       isSessionActive,
       expireSingleSession,
       clearSingleSession,
-      startFreeDemo
+      startFreeDemo,
+      // Beta Limited specific
+      startBetaSession,
+      betaSession,
+      incrementExamCount,
+      getRemainingExams,
+      canTakeExam
     }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
 const useAuth = () => useContext(AuthContext);
 const useLanguage = () => useContext(LanguageContext);
 
@@ -1460,268 +1445,405 @@ const SubscriptionPromoModal = ({ examCount, maxExams, onDismiss }) => {
   );
 };
 
-// Login Component
+// ═══════════════════════════════════════════════════════════════════════════
+// BETA LIMITED: Email Gate Login
+// ═══════════════════════════════════════════════════════════════════════════
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [username, setUsername] = useState('');
-  const [role, setRole] = useState('student');
-  const [showSingleSessionModal, setShowSingleSessionModal] = useState(false);
-  const [showActivateModal, setShowActivateModal] = useState(false);
-  const [showTosModal, setShowTosModal] = useState(false);
-  const { login, register, singleSession, purchaseSingleSession, activateSingleSession, startFreeDemo } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const { startBetaSession } = useAuth();
   const { t, language, setLanguage } = useLanguage();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await login(email, password);
+    setError('');
+    setIsLoading(true);
+
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim()) {
+      setError(t.emailRequired);
+      setIsLoading(false);
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      setError(t.emailInvalid);
+      setIsLoading(false);
+      return;
+    }
+
+    const result = await startBetaSession(email);
     if (!result.success) {
-      setError(result.error);
+      setError(t[result.error] || result.error);
     }
+    setIsLoading(false);
   };
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    const result = await register({ email, password, username, role });
-    if (result.success) {
-      setIsRegistering(false);
-      setError('Registrazione completata! Ora puoi accedere.');
-    } else {
-      setError(result.error);
-    }
-  };
-
-  const handlePurchaseSingleSession = async (email) => {
-    const result = await purchaseSingleSession(email);
-    if (result.success) {
-      setShowSingleSessionModal(false);
-      setShowActivateModal(true);
-    }
-    return result;
-  };
-
-  const handleActivateSingleSession = async () => {
-    await activateSingleSession();
-    setShowActivateModal(false);
-  };
-
-  // Start free demo - 15 minutes
-  const handleStartFreeDemo = async () => {
-    await startFreeDemo();
-  };
-
-  // Check if there's a purchased session waiting to be activated
-  useEffect(() => {
-    if (singleSession && singleSession.status === 'purchased') {
-      setShowActivateModal(true);
-    }
-  }, [singleSession]);
-
-  useEffect(() => {
-    const initDemoUsers = async () => {
-      try {
-        // Version check - increment to force re-initialization with new demo data
-        const DB_VERSION = 'v5_beta_app_time';
-        const versionResult = await storage.get('db_version');
-        const currentVersion = versionResult?.value;
-        
-        if (currentVersion !== DB_VERSION) {
-          // Demo exams for testing
-          const demoExams1 = [
-            { id: 'e1', date: '2026-01-05', material: 'aluminum', thickness: 10, score: 85, detected: 3, total: 4, falsePositives: 1, trainingTimeSeconds: 2850, trainingTimeFormatted: '0h 47m 30s' },
-            { id: 'e2', date: '2026-01-07', material: 'titanium', thickness: 15, score: 72, detected: 2, total: 3, falsePositives: 0, trainingTimeSeconds: 3600, trainingTimeFormatted: '1h 00m 00s' },
-            { id: 'e3', date: '2026-01-09', material: 'aluminum', thickness: 8, score: 90, detected: 4, total: 4, falsePositives: 0, trainingTimeSeconds: 5400, trainingTimeFormatted: '1h 30m 00s' }
-          ];
-          const demoExams2 = [
-            { id: 'e4', date: '2026-01-06', material: 'inconel', thickness: 20, score: 65, detected: 2, total: 4, falsePositives: 1, trainingTimeSeconds: 1800, trainingTimeFormatted: '0h 30m 00s' },
-            { id: 'e5', date: '2026-01-08', material: 'aluminum', thickness: 12, score: 78, detected: 3, total: 4, falsePositives: 0, trainingTimeSeconds: 4200, trainingTimeFormatted: '1h 10m 00s' }
-          ];
-          const demoExams3 = [
-            { id: 'e6', date: '2026-01-04', material: 'titanium', thickness: 10, score: 55, detected: 2, total: 5, falsePositives: 2, trainingTimeSeconds: 900, trainingTimeFormatted: '0h 15m 00s' },
-            { id: 'e7', date: '2026-01-06', material: 'aluminum', thickness: 15, score: 68, detected: 3, total: 5, falsePositives: 1, trainingTimeSeconds: 2400, trainingTimeFormatted: '0h 40m 00s' },
-            { id: 'e8', date: '2026-01-08', material: 'inconel', thickness: 25, score: 75, detected: 3, total: 4, falsePositives: 0, trainingTimeSeconds: 3300, trainingTimeFormatted: '0h 55m 00s' },
-            { id: 'e9', date: '2026-01-10', material: 'aluminum', thickness: 10, score: 82, detected: 4, total: 5, falsePositives: 0, trainingTimeSeconds: 4800, trainingTimeFormatted: '1h 20m 00s' }
-          ];
-          
-          const demoUsers = [
-            { id: '1', email: 'admin@rt.com', password: 'admin123', username: 'Admin', role: 'admin', createdAt: '2026-01-01T00:00:00.000Z', exams: [], totalAppTimeSeconds: 0 },
-            { id: '2', email: 'trainer@rt.com', password: 'trainer123', username: 'Dr. Rossi', role: 'trainer', createdAt: '2026-01-01T00:00:00.000Z', exams: [], totalAppTimeSeconds: 0 },
-            { id: '3', email: 'marco.bianchi@demo.com', password: 'demo123', username: 'Marco Bianchi', role: 'student', createdAt: '2026-01-03T00:00:00.000Z', exams: demoExams1, totalAppTimeSeconds: 7200 },
-            { id: '4', email: 'laura.verdi@demo.com', password: 'demo123', username: 'Laura Verdi', role: 'student', createdAt: '2026-01-04T00:00:00.000Z', exams: demoExams2, totalAppTimeSeconds: 3600 },
-            { id: '5', email: 'giuseppe.neri@demo.com', password: 'demo123', username: 'Giuseppe Neri', role: 'student', createdAt: '2026-01-02T00:00:00.000Z', exams: demoExams3, totalAppTimeSeconds: 10800 }
-          ];
-          await storage.set('users_db', JSON.stringify(demoUsers));
-          await storage.set('db_version', DB_VERSION);
-          console.log('Database initialized with demo users (version: ' + DB_VERSION + ')');
-        }
-      } catch (err) {
-        console.error('Init error:', err);
-      }
-    };
-    initDemoUsers();
-  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center p-4">
-      {/* Single Session Modals */}
-      {showSingleSessionModal && (
-        <SingleSessionPurchaseModal 
-          onClose={() => setShowSingleSessionModal(false)}
-          onPurchase={handlePurchaseSingleSession}
-        />
-      )}
-      {showActivateModal && singleSession && (
-        <SingleSessionActivateModal 
-          session={singleSession}
-          onActivate={handleActivateSingleSession}
-          onClose={() => setShowActivateModal(false)}
-        />
-      )}
-
+      {/* Language Switcher */}
       <div className="absolute top-4 right-4">
-        <button onClick={() => setLanguage(language === 'en' ? 'it' : 'en')} className="flex items-center gap-2 px-3 py-2 bg-gray-800 rounded-lg text-white hover:bg-gray-700">
+        <button 
+          onClick={() => setLanguage(language === 'en' ? 'it' : 'en')} 
+          className="flex items-center gap-2 px-3 py-2 bg-gray-800 rounded-lg text-white hover:bg-gray-700"
+        >
           <Globe className="w-4 h-4" />
           {language.toUpperCase()}
         </button>
       </div>
       
-      <div className="bg-gray-800 rounded-lg shadow-2xl p-8 w-full max-w-md border border-gray-700">
+      <div className="bg-gray-800 rounded-lg shadow-2xl p-8 w-full max-w-lg border border-gray-700">
+        {/* Header */}
         <div className="text-center mb-8">
-          <img src={COMPANY_LOGO} alt="Company Logo" className="w-24 h-24 mx-auto mb-4 object-contain" />
+          <img src={COMPANY_LOGO} alt="RT Training" className="w-24 h-24 mx-auto mb-4 object-contain" />
           <h1 className="text-2xl font-bold text-white mb-2">{t.title}</h1>
-          <p className="text-gray-400 text-sm">{t.subtitle}</p>
-        </div>
-
-        {/* Demo and Single Session Options */}
-        <div className="space-y-3 mb-6">
-          {/* Free Demo Banner */}
-          <div 
-            onClick={() => handleStartFreeDemo()}
-            className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/50 rounded-lg p-3 cursor-pointer hover:border-green-400 transition group"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="bg-green-500/20 rounded-full p-2 group-hover:bg-green-500/30 transition">
-                  <Play className="w-4 h-4 text-green-400" />
-                </div>
-                <div>
-                  <h3 className="text-white font-semibold text-sm">{t.freeDemo || 'Demo Gratuita'}</h3>
-                  <p className="text-gray-400 text-xs">{t.freeDemoDesc || 'Prova il simulatore per 15 minuti'}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-green-400 font-bold text-sm">{t.free || 'GRATIS'}</div>
-                <div className="text-xs text-gray-500">15 min</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Single Session Banner - Beta: no price shown */}
-          <div 
-            onClick={() => setShowSingleSessionModal(true)}
-            className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border border-yellow-500/50 rounded-lg p-3 cursor-pointer hover:border-yellow-400 transition group"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="bg-yellow-500/20 rounded-full p-2 group-hover:bg-yellow-500/30 transition">
-                  <Zap className="w-4 h-4 text-yellow-400" />
-                </div>
-                <div>
-                  <h3 className="text-white font-semibold text-sm">{t.singleSession}</h3>
-                  <p className="text-gray-400 text-xs">{t.singleSessionSubtitle}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-yellow-400 font-bold text-xs">{t.betaAccess || 'ACCESSO BETA'}</div>
-                <div className="text-xs text-gray-500">{t.singleSessionDuration}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex-1 h-px bg-gray-700"></div>
-          <span className="text-xs text-gray-500">{t.singleSessionOrLogin}</span>
-          <div className="flex-1 h-px bg-gray-700"></div>
-        </div>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-900 border border-red-700 rounded text-red-200 text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={isRegistering ? handleRegister : handleLogin} className="space-y-4">
-          {isRegistering && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">{t.username}</label>
-                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">{t.role}</label>
-                <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white">
-                  <option value="student">{t.student}</option>
-                  <option value="trainer">{t.trainer}</option>
-                  <option value="admin">{t.admin}</option>
-                </select>
-              </div>
-            </>
-          )}
+          <p className="text-gray-400 text-sm mb-4">{t.subtitle}</p>
           
+          {/* Beta Badge */}
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-600 to-orange-600 text-black px-4 py-1 rounded-full text-sm font-bold">
+            <Star className="w-4 h-4" />
+            {t.betaLimited}
+          </div>
+        </div>
+
+        {/* Welcome Message */}
+        <div className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-4 mb-6">
+          <h2 className="text-lg font-semibold text-blue-300 mb-2">{t.betaWelcome}</h2>
+          <p className="text-gray-300 text-sm">{t.betaEmailGate}</p>
+        </div>
+
+        {/* Email Form */}
+        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">{t.email}</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white" required />
+            <input 
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+              placeholder="nome@azienda.com"
+              disabled={isLoading}
+              autoFocus
+            />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">{t.password}</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white" required />
-          </div>
+          {error && (
+            <div className="bg-red-900/30 border border-red-600 rounded-lg p-3">
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
 
-          <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
-            {isRegistering ? 'Registrati' : t.login}
+          <button 
+            type="submit" 
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-3 px-6 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isLoading ? (
+              <>
+                <RefreshCw className="w-5 h-5 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              <>
+                <Play className="w-5 h-5" />
+                {t.betaAccessButton}
+              </>
+            )}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <button onClick={() => setIsRegistering(!isRegistering)} className="text-blue-400 hover:text-blue-300 text-sm">
-            {isRegistering ? t.alreadyHaveAccount : t.needAccount}
-          </button>
+        {/* Warning: No Save */}
+        <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-3 mb-6">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+            <p className="text-yellow-200 text-sm">{t.betaNoSave}</p>
+          </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-gray-700">
-          <p className="text-xs text-gray-500 text-center mb-2">{t.demoAccounts}:</p>
-          <div className="text-xs text-gray-400 space-y-1">
-            <p>Trainer: trainer@rt.com / trainer123</p>
-            <p>Studente 1: marco.bianchi@demo.com / demo123</p>
-            <p>Studente 2: laura.verdi@demo.com / demo123</p>
-            <p>Studente 3: giuseppe.neri@demo.com / demo123</p>
-          </div>
+        {/* Beta Limitations */}
+        <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
+          <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+            <Shield className="w-4 h-4 text-orange-400" />
+            {t.betaLimitations}
+          </h3>
+          <ul className="space-y-2 text-sm text-gray-400">
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
+              {t.betaMaxExams}
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
+              {t.betaSessionTime}
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+              {t.betaNoWeld}
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+              {t.betaNoCertificates}
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+              {t.betaNoInconel}
+            </li>
+          </ul>
         </div>
-        
-        <div className="mt-6 pt-4 border-t border-gray-700">
-          <p className="text-xs text-gray-500 text-center">{COPYRIGHT_TEXT}</p>
-          <button 
-            onClick={() => setShowTosModal(true)}
-            className="text-xs text-cyan-400 hover:text-cyan-300 underline block mx-auto mt-2"
+
+        {/* Premium CTA */}
+        <div className="mt-6 text-center">
+          <p className="text-gray-500 text-xs mb-2">{t.premiumRequired}?</p>
+          <a 
+            href={PREMIUM_MAILTO}
+            className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition"
           >
-            {t.termsOfService || 'Termini di Servizio'}
-          </button>
-          <div className="mt-3 p-2 bg-yellow-900/30 border border-yellow-700/50 rounded text-center">
-            <p className="text-xs text-yellow-400 font-semibold">{t.certificateDisclaimer1}</p>
-            <p className="text-xs text-yellow-600">{t.certificateDisclaimer2}</p>
-          </div>
+            {t.contactForPremium} →
+          </a>
+        </div>
+
+        {/* Version & Copyright */}
+        <div className="mt-6 pt-4 border-t border-gray-700 text-center">
+          <p className="text-gray-500 text-xs">{COPYRIGHT_TEXT}</p>
+          <p className="text-gray-600 text-xs mt-1">v{APP_VERSION}</p>
         </div>
       </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BETA LIMITED: Session Timer Component
+// ═══════════════════════════════════════════════════════════════════════════
+const BetaSessionTimer = ({ onExpire }) => {
+  const { getSessionRemainingTime, isSessionActive, logout } = useAuth();
+  const { t } = useLanguage();
+  const [remaining, setRemaining] = useState(getSessionRemainingTime() || 0);
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
+
+  useEffect(() => {
+    if (!isSessionActive()) return;
+    
+    const interval = setInterval(() => {
+      const time = getSessionRemainingTime();
+      setRemaining(time || 0);
       
-      {/* Terms of Service Modal */}
-      {showTosModal && (
-        <TermsOfServiceModal onClose={() => setShowTosModal(false)} />
+      if (time <= 0) {
+        clearInterval(interval);
+        setShowExpiredModal(true);
+        onExpire?.();
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const isLow = remaining < 600; // < 10 minutes
+  const isCritical = remaining < 180; // < 3 minutes
+
+  return (
+    <>
+      <div className={`fixed bottom-4 right-4 z-40 px-4 py-2 rounded-lg shadow-lg border ${
+        isCritical ? 'bg-red-900 border-red-500 animate-pulse' :
+        isLow ? 'bg-yellow-900 border-yellow-500' :
+        'bg-gray-800 border-gray-600'
+      }`}>
+        <div className="flex items-center gap-2 text-sm">
+          <Clock className={`w-4 h-4 ${isCritical ? 'text-red-400' : isLow ? 'text-yellow-400' : 'text-gray-400'}`} />
+          <span className={`font-mono font-bold ${
+            isCritical ? 'text-red-300' : isLow ? 'text-yellow-300' : 'text-white'
+          }`}>
+            {formatTime(remaining)}
+          </span>
+          <span className="text-gray-400 text-xs">Beta</span>
+        </div>
+      </div>
+
+      {/* Session Expired Modal */}
+      {showExpiredModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg border border-red-600 p-8 max-w-md w-full text-center">
+            <Clock className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-white mb-2">{t.sessionExpired}</h2>
+            <p className="text-gray-300 mb-6">{t.sessionExpiredMessage}</p>
+            
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  logout();
+                  window.location.reload();
+                }}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition"
+              >
+                {t.startNewSession}
+              </button>
+              
+              <a
+                href={PREMIUM_MAILTO}
+                className="block w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold py-3 px-6 rounded-lg transition"
+              >
+                {t.upgradeToPremium} →
+              </a>
+            </div>
+          </div>
+        </div>
       )}
+    </>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BETA LIMITED: Premium Feature Modal
+// ═══════════════════════════════════════════════════════════════════════════
+const PremiumFeatureModal = ({ feature, message, onClose }) => {
+  const { t } = useLanguage();
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-800 rounded-lg border border-yellow-600 p-6 max-w-md w-full">
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Shield className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">{t.premiumFeature}</h2>
+          <p className="text-gray-300">{message}</p>
+        </div>
+        
+        {/* Premium Benefits */}
+        <div className="bg-gray-900 rounded-lg p-4 mb-6">
+          <h3 className="text-sm font-semibold text-yellow-400 mb-3">{t.premiumBenefits}:</h3>
+          <ul className="space-y-2 text-sm text-gray-300">
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-green-400" />
+              {t.premiumUnlimitedExams}
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-green-400" />
+              {t.premiumAllMaterials}
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-green-400" />
+              {t.premiumWeldSpecimens}
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-green-400" />
+              {t.premiumCertificates}
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-green-400" />
+              {t.premiumSavedProgress}
+            </li>
+          </ul>
+        </div>
+        
+        <div className="space-y-3">
+          <a
+            href={PREMIUM_MAILTO}
+            className="block w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold py-3 px-6 rounded-lg transition text-center"
+          >
+            {t.contactForPremium} →
+          </a>
+          <button
+            onClick={onClose}
+            className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition"
+          >
+            {t.close || 'Chiudi'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BETA LIMITED: Exam Limit Reached Modal
+// ═══════════════════════════════════════════════════════════════════════════
+const ExamLimitModal = ({ onClose }) => {
+  const { t } = useLanguage();
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-800 rounded-lg border border-red-600 p-6 max-w-md w-full">
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-400" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">{t.betaLimitReached}</h2>
+          <p className="text-gray-300">{t.betaLimitMessage}</p>
+        </div>
+        
+        {/* What you get with Premium */}
+        <div className="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border border-yellow-600/50 rounded-lg p-4 mb-6">
+          <h3 className="text-sm font-semibold text-yellow-400 mb-3">{t.upgradeToPremium}:</h3>
+          <ul className="space-y-2 text-sm text-gray-300">
+            <li className="flex items-center gap-2">
+              <Star className="w-4 h-4 text-yellow-400" />
+              {t.premiumUnlimitedExams}
+            </li>
+            <li className="flex items-center gap-2">
+              <Star className="w-4 h-4 text-yellow-400" />
+              {t.premiumWeldSpecimens}
+            </li>
+            <li className="flex items-center gap-2">
+              <Star className="w-4 h-4 text-yellow-400" />
+              {t.premiumCertificates}
+            </li>
+          </ul>
+        </div>
+        
+        <div className="space-y-3">
+          <a
+            href={PREMIUM_MAILTO}
+            className="block w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold py-3 px-6 rounded-lg transition text-center"
+          >
+            {t.contactForPremium} →
+          </a>
+          <button
+            onClick={onClose}
+            className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition"
+          >
+            {t.continuePractice || 'Continua con Teaching/Learning'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BETA LIMITED: Status Bar (shows exam count and time)
+// ═══════════════════════════════════════════════════════════════════════════
+const BetaStatusBar = () => {
+  const { getRemainingExams, betaSession } = useAuth();
+  const { t } = useLanguage();
+  const remaining = getRemainingExams ? getRemainingExams() : BETA_LIMITS.maxExams;
+  const used = BETA_LIMITS.maxExams - remaining;
+  
+  return (
+    <div className="bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border-b border-yellow-600/50 px-4 py-2">
+      <div className="flex items-center justify-between max-w-screen-2xl mx-auto">
+        <div className="flex items-center gap-4">
+          <span className="text-yellow-400 text-xs font-bold flex items-center gap-1">
+            <Star className="w-3 h-3" />
+            {t.betaLimited}
+          </span>
+          <span className="text-gray-300 text-xs">
+            {t.betaExamsRemaining}: <strong className={remaining <= 1 ? 'text-red-400' : 'text-white'}>{remaining}/{BETA_LIMITS.maxExams}</strong>
+          </span>
+        </div>
+        <a 
+          href={PREMIUM_MAILTO}
+          className="text-yellow-400 hover:text-yellow-300 text-xs font-medium transition"
+        >
+          {t.upgradeToPremium} →
+        </a>
+      </div>
     </div>
   );
 };
@@ -1731,6 +1853,46 @@ const CertificatesView = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [generating, setGenerating] = useState(null);
+  
+  // Beta Limited: Block certificates
+  if (IS_BETA_LIMITED) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="bg-gray-800 rounded-lg border border-yellow-600 p-8 max-w-lg w-full text-center">
+          <div className="w-20 h-20 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Award className="w-10 h-10 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-4">{t.premiumFeature}</h2>
+          <p className="text-gray-300 mb-6">{t.premiumCertMessage}</p>
+          
+          <div className="bg-gray-900 rounded-lg p-4 mb-6 text-left">
+            <h3 className="text-sm font-semibold text-yellow-400 mb-3">{t.premiumBenefits}:</h3>
+            <ul className="space-y-2 text-sm text-gray-300">
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-400" />
+                {t.premiumCertificates}
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-400" />
+                {t.premiumSavedProgress}
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-400" />
+                {t.premiumUnlimitedExams}
+              </li>
+            </ul>
+          </div>
+          
+          <a
+            href={PREMIUM_MAILTO}
+            className="inline-block bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold py-3 px-8 rounded-lg transition"
+          >
+            {t.contactForPremium} →
+          </a>
+        </div>
+      </div>
+    );
+  }
   
   // Get passed exams (score >= 80%)
   const passedExams = (user?.exams || []).filter(exam => parseFloat(exam.score) >= 80);
@@ -3132,7 +3294,11 @@ const XRaySimulator = ({ onExamComplete }) => {
   const canvasRef = useRef(null);
   const overlayCanvasRef = useRef(null);
   const { t } = useLanguage();
-  const { user, singleSession } = useAuth();
+  const { user, singleSession, getRemainingExams, canTakeExam, incrementExamCount } = useAuth();
+  
+  // Beta Limited: Premium modal state
+  const [showPremiumModal, setShowPremiumModal] = useState(null); // { feature, message }
+  const [showExamLimitModal, setShowExamLimitModal] = useState(false);
   
   // Mode: 'teaching', 'learning', 'exam'
   const [mode, setMode] = useState('teaching');
@@ -3148,7 +3314,8 @@ const XRaySimulator = ({ onExamComplete }) => {
   const [showDefectModal, setShowDefectModal] = useState(false);
   
   // Multi-image exam state (5 images per exam)
-  const EXAM_IMAGE_COUNT = 5;
+  // Multi-image exam state - Beta Limited: 3 images per exam
+  const EXAM_IMAGE_COUNT = IS_BETA_LIMITED ? BETA_LIMITS.examImageCount : 5;
   const [examImages, setExamImages] = useState([]); // Array of {defects: [], markedDefects: []}
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [examResults, setExamResults] = useState(null); // Results for all images
@@ -5512,6 +5679,12 @@ const XRaySimulator = ({ onExamComplete }) => {
   };
 
   const startExam = () => {
+    // Beta Limited: Check exam limit
+    if (IS_BETA_LIMITED && !canTakeExam()) {
+      setShowExamLimitModal(true);
+      return;
+    }
+    
     setExamStarted(true);
     setScore(null);
     setExamResults(null);
@@ -5527,6 +5700,11 @@ const XRaySimulator = ({ onExamComplete }) => {
     setNoiseSeed(images[0].noiseSeed);
     setZoom(1);
     setPanOffset({ x: 0, y: 0 });
+    
+    // Beta Limited: Increment exam count
+    if (IS_BETA_LIMITED) {
+      incrementExamCount();
+    }
   };
   
   // Navigate to next/previous image in exam
@@ -5843,16 +6021,34 @@ ID Certificato: ${user.id}-${exam.date}
 
         {mode === 'exam' && (
           <div className="ml-auto flex gap-2 items-center">
-            {/* Exam count for single session */}
-            {user?.isSingleSession && !user?.isDemo && (
+            {/* Beta Limited: Exam count */}
+            {IS_BETA_LIMITED && (
+              <span className={`text-xs mr-2 px-2 py-1 rounded ${
+                getRemainingExams() <= 1 ? 'bg-red-900 text-red-300' : 
+                getRemainingExams() <= 2 ? 'bg-yellow-900 text-yellow-300' : 
+                'bg-gray-700 text-gray-300'
+              }`}>
+                {t.betaExamsRemaining}: {getRemainingExams()}/{BETA_LIMITS.maxExams}
+              </span>
+            )}
+            
+            {/* Legacy: Exam count for single session */}
+            {!IS_BETA_LIMITED && user?.isSingleSession && !user?.isDemo && (
               <span className="text-xs text-gray-400 mr-2">
                 {t.examsUsed || 'Esami'}: {sessionExamCount}/{MAX_EXAMS_SINGLE_SESSION}
               </span>
             )}
             
             {!examStarted ? (
-              // Check if single session has reached exam limit
-              user?.isSingleSession && !user?.isDemo && sessionExamCount >= MAX_EXAMS_SINGLE_SESSION ? (
+              // Beta Limited: Check exam limit
+              IS_BETA_LIMITED && !canTakeExam() ? (
+                <div className="flex items-center gap-2 bg-red-900 px-4 py-2 rounded text-red-300">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="text-sm">{t.betaLimitReached}</span>
+                </div>
+              ) : 
+              // Legacy: Check if single session has reached exam limit
+              !IS_BETA_LIMITED && user?.isSingleSession && !user?.isDemo && sessionExamCount >= MAX_EXAMS_SINGLE_SESSION ? (
                 <div className="flex items-center gap-2 bg-gray-700 px-4 py-2 rounded text-gray-400">
                   <AlertCircle className="w-4 h-4 text-yellow-500" />
                   <span className="text-sm">{t.examLimitReached || 'Limite esami raggiunto'}</span>
@@ -6061,18 +6257,33 @@ ID Certificato: ${user.id}-${exam.date}
                 {t.flatPlate || 'Piastra'}
               </button>
               <button
-                onClick={() => setSpecimenType('weld')}
+                onClick={() => {
+                  if (IS_BETA_LIMITED) {
+                    setShowPremiumModal({ feature: 'weld', message: t.premiumWeldMessage });
+                  } else {
+                    setSpecimenType('weld');
+                  }
+                }}
                 disabled={examStarted}
-                className={`flex-1 px-3 py-2 rounded text-sm font-medium transition ${
-                  specimenType === 'weld' 
-                    ? 'bg-orange-600 text-white' 
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                className={`flex-1 px-3 py-2 rounded text-sm font-medium transition relative ${
+                  IS_BETA_LIMITED 
+                    ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-dashed border-orange-600'
+                    : specimenType === 'weld' 
+                      ? 'bg-orange-600 text-white' 
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 } disabled:opacity-50`}
               >
                 {t.weldedJoint || 'Saldatura'}
+                {IS_BETA_LIMITED && <Shield className="w-3 h-3 absolute -top-1 -right-1 text-orange-500" />}
               </button>
             </div>
-            {specimenType === 'weld' && (
+            {IS_BETA_LIMITED && (
+              <p className="text-xs text-orange-400 mt-2 flex items-center gap-1">
+                <Shield className="w-3 h-3" />
+                {t.premiumWeldMessage || 'Saldatura disponibile con Premium'}
+              </p>
+            )}
+            {!IS_BETA_LIMITED && specimenType === 'weld' && (
               <p className="text-xs text-orange-400 mt-2">
                 {t.weldZoneInfo || 'Difetti concentrati nel cordone e nella ZTA'}
               </p>
@@ -6084,12 +6295,15 @@ ID Certificato: ${user.id}-${exam.date}
             <select value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full bg-gray-800 rounded px-3 py-2 text-white border border-gray-700" disabled={examStarted}>
               <option value="aluminum">{t.aluminium}</option>
               <option value="titanium">{t.titanium}</option>
-              {!user?.isDemo && (
+              {!IS_BETA_LIMITED && (
                 <option value="inconel">{t.inconel}</option>
               )}
             </select>
-            {user?.isDemo && (
-              <p className="text-xs text-yellow-500 mt-1">{t.moreMaterialsWithPro || 'Altri materiali con sessione completa'}</p>
+            {IS_BETA_LIMITED && (
+              <p className="text-xs text-yellow-500 mt-1 flex items-center gap-1">
+                <Shield className="w-3 h-3" />
+                {t.premiumInconelMessage || 'Inconel disponibile con Premium'}
+              </p>
             )}
           </div>
 
@@ -6614,6 +6828,20 @@ ID Certificato: ${user.id}-${exam.date}
           maxExams={MAX_EXAMS_SINGLE_SESSION}
           onDismiss={() => setShowPromoModal(false)}
         />
+      )}
+      
+      {/* Beta Limited: Premium Feature Modal */}
+      {showPremiumModal && (
+        <PremiumFeatureModal
+          feature={showPremiumModal.feature}
+          message={showPremiumModal.message}
+          onClose={() => setShowPremiumModal(null)}
+        />
+      )}
+      
+      {/* Beta Limited: Exam Limit Modal */}
+      {showExamLimitModal && (
+        <ExamLimitModal onClose={() => setShowExamLimitModal(false)} />
       )}
     </div>
   );
@@ -7228,17 +7456,23 @@ const AppContent = () => {
   }, [user]);
 
   return (
-    <div className="h-screen bg-gray-950 text-white flex overflow-hidden">
-      {/* Single Session Timer */}
-      {user?.isSingleSession && isSessionActive() && (
+    <div className="h-screen bg-gray-950 text-white flex flex-col overflow-hidden">
+      {/* Beta Limited: Status Bar */}
+      {IS_BETA_LIMITED && <BetaStatusBar />}
+      
+      {/* Beta Limited: Session Timer */}
+      {IS_BETA_LIMITED && <BetaSessionTimer onExpire={() => {}} />}
+      
+      {/* Single Session Timer (legacy - disabled in Beta Limited) */}
+      {!IS_BETA_LIMITED && user?.isSingleSession && isSessionActive() && (
         <SingleSessionTimer 
           onExpire={handleSessionExpire}
           onWarning={handleSessionWarning}
         />
       )}
 
-      {/* Upsell Modal */}
-      {showUpsellModal && (
+      {/* Upsell Modal (legacy - disabled in Beta Limited) */}
+      {!IS_BETA_LIMITED && showUpsellModal && (
         <SingleSessionUpsellModal 
           remainingMinutes={upsellMinutes}
           onUpgrade={handleUpgrade}
@@ -7246,8 +7480,8 @@ const AppContent = () => {
         />
       )}
 
-      {/* Expired Modal */}
-      {showExpiredModal && (
+      {/* Expired Modal (legacy - disabled in Beta Limited) */}
+      {!IS_BETA_LIMITED && showExpiredModal && (
         <SingleSessionExpiredModal 
           onBuyAnother={handleBuyAnother}
           onUpgrade={handleUpgrade}
@@ -7263,6 +7497,8 @@ const AppContent = () => {
           }}
         />
       )}
+      
+      <div className="flex-1 flex overflow-hidden">
 
       {feedbackType && (
         <FeedbackModal 
@@ -7435,6 +7671,7 @@ const AppContent = () => {
           {view === 'admin' && user.role === 'admin' && <AdminDashboard />}
           {view === 'certificates' && <CertificatesView />}
         </div>
+      </div>
       </div>
     </div>
   );
