@@ -1,28 +1,30 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
-import { Camera, ZoomIn, ZoomOut, Maximize2, Filter, RefreshCw, Play, BookOpen, ClipboardCheck, ChevronDown, ChevronUp, Eye, EyeOff, Undo, Redo, MousePointer, Ruler, Circle, Square, BarChart3, TrendingUp, Layers, LogOut, Users, Award, Download, Settings, Globe, Menu, X, FileText, CheckCircle, AlertCircle, Star, Lock, Clock, Shield, Mail } from 'lucide-react';
+import { Camera, ZoomIn, ZoomOut, Maximize2, Filter, RefreshCw, Play, BookOpen, ClipboardCheck, ChevronDown, ChevronUp, Eye, EyeOff, Undo, Redo, MousePointer, Ruler, Circle, Square, BarChart3, TrendingUp, Layers, LogOut, Users, Award, Download, Settings, Globe, Menu, X, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// RT TRAINING BETA 2.1.0 - Email Gate Version
+// GOOGLE SHEETS INTEGRATION - Email Collection
 // ═══════════════════════════════════════════════════════════════════════════════
-
-const APP_VERSION = "2.1.0-beta";
-const CONTACT_EMAIL = "rtsymulationtrainingfeedback@gmail.com";
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// BETA CONFIGURATION
-// ═══════════════════════════════════════════════════════════════════════════════
-const IS_BETA_LIMITED = true;
-const BETA_LIMITS = {
-  maxExams: 5,                    // Max 5 exams
-  sessionDuration: 60 * 60,       // 1 hour in seconds
-  allowedMaterials: ['aluminum', 'titanium'],
-  allowInconel: false             // Inconel is Premium only
-};
-
-// Google Apps Script URL for email collection
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxwRrzrrLy65OHTmp51Zy0cZn1YaUWfSfznP-_Vit_9x520ZFW4zlsZ9eJayF0W3vH/exec";
 
-const PREMIUM_MAILTO = `mailto:${CONTACT_EMAIL}?subject=Richiesta%20Abbonamento%20Premium%20RT%20Training&body=Buongiorno%2C%0A%0ASono%20interessato%20all'abbonamento%20Premium%20di%20RT%20Training.%0A%0ANome%3A%20%0AAzienda%3A%20%0AEmail%3A%20%0A%0AGrazie`;
+// Send email to Google Sheets (non-blocking background operation)
+const sendEmailToGoogleSheet = (email, source = 'app') => {
+  try {
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email,
+        source: source,
+        timestamp: new Date().toISOString()
+      })
+    }).catch(() => {
+      // Silently ignore - non-blocking
+    });
+  } catch (err) {
+    // Non-blocking
+  }
+};
 
 // Storage Helper
 const storage = {
@@ -55,9 +57,7 @@ const storage = {
   }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// TRANSLATIONS
-// ═══════════════════════════════════════════════════════════════════════════════
+// Language Context
 const LanguageContext = createContext();
 const translations = {
   en: {
@@ -115,32 +115,7 @@ const translations = {
     cancel: "Cancel",
     defectMarked: "Defect marked",
     correctType: "Correct type",
-    wrongType: "Wrong type",
-    // Beta Limited translations
-    betaLimited: "BETA LIMITED",
-    betaWelcome: "Welcome to RT Training Beta",
-    betaEmailGate: "Enter your email to access the free Beta version",
-    betaAccessButton: "Access Beta",
-    betaNoSave: "Progress will NOT be saved between sessions",
-    betaLimitations: "Beta Limitations",
-    betaMaxExams: "Maximum 5 exams per session",
-    betaNoInconel: "Inconel material not available",
-    betaSessionTime: "1 hour session limit",
-    betaExamsRemaining: "Exams remaining",
-    betaExamsUsed: "exams used",
-    betaLimitReached: "Exam Limit Reached",
-    betaLimitMessage: "You have used all 5 exams available in Beta. Subscribe to Premium for unlimited access!",
-    premiumFeature: "Premium Feature",
-    premiumInconelMessage: "Inconel is a Premium material. Subscribe to train on all aerospace materials!",
-    contactForPremium: "Contact for Premium",
-    emailRequired: "Email is required",
-    emailInvalid: "Please enter a valid email address",
-    sessionExpired: "Session Expired",
-    sessionExpiredMessage: "Your 1-hour Beta session has expired.",
-    startNewSession: "Start New Session",
-    hours: "h",
-    minutes: "m",
-    seconds: "s"
+    wrongType: "Wrong type"
   },
   it: {
     title: "Simulatore Radiografia Digitale RT",
@@ -197,211 +172,91 @@ const translations = {
     cancel: "Annulla",
     defectMarked: "Difetto marcato",
     correctType: "Tipo corretto",
-    wrongType: "Tipo errato",
-    // Beta Limited translations
-    betaLimited: "BETA LIMITATA",
-    betaWelcome: "Benvenuto in RT Training Beta",
-    betaEmailGate: "Inserisci la tua email per accedere alla versione Beta gratuita",
-    betaAccessButton: "Accedi alla Beta",
-    betaNoSave: "I progressi NON verranno salvati tra le sessioni",
-    betaLimitations: "Limitazioni Beta",
-    betaMaxExams: "Massimo 5 esami per sessione",
-    betaNoInconel: "Materiale Inconel non disponibile",
-    betaSessionTime: "Sessione limitata a 1 ora",
-    betaExamsRemaining: "Esami rimanenti",
-    betaExamsUsed: "esami effettuati",
-    betaLimitReached: "Limite Esami Raggiunto",
-    betaLimitMessage: "Hai utilizzato tutti i 5 esami disponibili nella Beta. Abbonati a Premium per accesso illimitato!",
-    premiumFeature: "Funzione Premium",
-    premiumInconelMessage: "Inconel è un materiale Premium. Abbonati per allenarti su tutti i materiali aerospaziali!",
-    contactForPremium: "Contatta per Premium",
-    emailRequired: "Email obbligatoria",
-    emailInvalid: "Inserisci un indirizzo email valido",
-    sessionExpired: "Sessione Scaduta",
-    sessionExpiredMessage: "La tua sessione Beta di 1 ora è scaduta.",
-    startNewSession: "Avvia Nuova Sessione",
-    hours: "h",
-    minutes: "m",
-    seconds: "s"
+    wrongType: "Tipo errato"
   }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// AUTH CONTEXT - BETA EMAIL GATE
-// ═══════════════════════════════════════════════════════════════════════════════
+// Auth Context
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [betaSession, setBetaSession] = useState(null);
 
   useEffect(() => {
-    checkBetaSession();
+    checkAuth();
   }, []);
 
-  // Check for existing Beta session
-  const checkBetaSession = async () => {
+  const checkAuth = async () => {
     try {
-      const result = await storage.get('beta_session');
+      const result = await storage.get('current_user');
       if (result && result.value) {
-        const session = JSON.parse(result.value);
-        const now = Date.now();
-        const sessionAge = now - session.startTime;
-        
-        // Check if session is still valid (1 hour)
-        if (sessionAge < BETA_LIMITS.sessionDuration * 1000) {
-          setBetaSession(session);
-          setUser({
-            id: 'beta_' + session.startTime,
-            email: session.email,
-            username: 'Utente Beta',
-            role: 'student',
-            isBetaLimited: true,
-            examsUsed: session.examsUsed || 0,
-            sessionStartTime: session.startTime,
-            exams: []
-          });
-        } else {
-          // Session expired - clear it
-          await storage.delete('beta_session');
-        }
+        setUser(JSON.parse(result.value));
       }
     } catch (err) {
-      console.log('No beta session found');
+      console.log('No active session');
     }
     setLoading(false);
   };
 
-  // Send email to Google Apps Script (non-blocking background operation)
-  const sendEmailToGoogleScript = async (email) => {
+  const login = async (email, password) => {
     try {
-      // Use fetch with no-cors to send to Google Script (fire and forget)
-      fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email,
-          source: 'rt-training-beta',
-          timestamp: new Date().toISOString(),
-          userAgent: navigator.userAgent.substring(0, 200)
-        })
-      }).catch(() => {
-        // Silently ignore errors - we don't want to block user access
-      });
+      const usersResult = await storage.get('users_db');
+      const users = usersResult ? JSON.parse(usersResult.value) : [];
+      
+      const foundUser = users.find(u => u.email === email && u.password === password);
+      if (foundUser) {
+        const userSession = { ...foundUser, lastLogin: new Date().toISOString() };
+        delete userSession.password;
+        await storage.set('current_user', JSON.stringify(userSession));
+        setUser(userSession);
+        
+        // 📊 GOOGLE SHEETS: Send email on successful login
+        sendEmailToGoogleSheet(email, 'login');
+        
+        return { success: true };
+      }
+      return { success: false, error: 'Credenziali non valide' };
     } catch (err) {
-      // Non-blocking - ignore errors
-      console.log('Email send (non-blocking)');
+      return { success: false, error: err.message };
     }
   };
 
-  // Start Beta session with email only
-  const startBetaSession = async (email) => {
+  const logout = async () => {
+    await storage.delete('current_user');
+    setUser(null);
+  };
+
+  const register = async (userData) => {
     try {
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email || !emailRegex.test(email.trim())) {
-        return { success: false, error: 'emailInvalid' };
+      const usersResult = await storage.get('users_db');
+      const users = usersResult ? JSON.parse(usersResult.value) : [];
+      
+      if (users.find(u => u.email === userData.email)) {
+        return { success: false, error: 'Email già esistente' };
       }
-
-      const cleanEmail = email.trim().toLowerCase();
-      const now = Date.now();
       
-      const session = {
-        email: cleanEmail,
-        startTime: now,
-        expirationTime: now + (BETA_LIMITS.sessionDuration * 1000),
-        examsUsed: 0
-      };
-
-      // Save session locally
-      await storage.set('beta_session', JSON.stringify(session));
-      
-      // Send email to Google Script in background (non-blocking)
-      sendEmailToGoogleScript(cleanEmail);
-
-      setBetaSession(session);
-      setUser({
-        id: 'beta_' + now,
-        email: cleanEmail,
-        username: 'Utente Beta',
-        role: 'student',
-        isBetaLimited: true,
-        examsUsed: 0,
-        sessionStartTime: now,
+      const newUser = {
+        id: Date.now().toString(),
+        ...userData,
+        createdAt: new Date().toISOString(),
         exams: []
-      });
-
+      };
+      
+      users.push(newUser);
+      await storage.set('users_db', JSON.stringify(users));
+      
+      // 📊 GOOGLE SHEETS: Send email on successful registration
+      sendEmailToGoogleSheet(userData.email, 'register');
+      
       return { success: true };
     } catch (err) {
       return { success: false, error: err.message };
     }
   };
 
-  // Increment exam count
-  const incrementExamCount = async () => {
-    if (!betaSession) return 0;
-    
-    const newCount = (betaSession.examsUsed || 0) + 1;
-    const updatedSession = { ...betaSession, examsUsed: newCount };
-    
-    await storage.set('beta_session', JSON.stringify(updatedSession));
-    setBetaSession(updatedSession);
-    
-    if (user) {
-      setUser({ ...user, examsUsed: newCount });
-    }
-    
-    return newCount;
-  };
-
-  // Get remaining exams
-  const getRemainingExams = () => {
-    const used = betaSession?.examsUsed || user?.examsUsed || 0;
-    return Math.max(0, BETA_LIMITS.maxExams - used);
-  };
-
-  // Check if can take exam
-  const canTakeExam = () => {
-    return getRemainingExams() > 0;
-  };
-
-  // Get session remaining time in seconds
-  const getSessionRemainingTime = () => {
-    if (!betaSession) return null;
-    const now = Date.now();
-    const elapsed = now - betaSession.startTime;
-    const remaining = Math.max(0, BETA_LIMITS.sessionDuration - Math.floor(elapsed / 1000));
-    return remaining;
-  };
-
-  // Check if session is active
-  const isSessionActive = () => {
-    const remaining = getSessionRemainingTime();
-    return remaining !== null && remaining > 0;
-  };
-
-  // Logout / End session
-  const logout = async () => {
-    await storage.delete('beta_session');
-    setBetaSession(null);
-    setUser(null);
-  };
-
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      loading, 
-      logout,
-      startBetaSession,
-      betaSession,
-      incrementExamCount,
-      getRemainingExams,
-      canTakeExam,
-      getSessionRemainingTime,
-      isSessionActive
-    }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
@@ -410,278 +265,257 @@ const AuthProvider = ({ children }) => {
 const useAuth = () => useContext(AuthContext);
 const useLanguage = () => useContext(LanguageContext);
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SESSION TIMER COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════════
-const SessionTimer = () => {
-  const { getSessionRemainingTime } = useAuth();
-  const { t } = useLanguage();
-  const [remaining, setRemaining] = useState(getSessionRemainingTime() || 0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const time = getSessionRemainingTime();
-      if (time !== null) {
-        setRemaining(time);
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [getSessionRemainingTime]);
-
-  const formatTime = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h}${t.hours} ${m.toString().padStart(2, '0')}${t.minutes}`;
-  };
-
-  const isLow = remaining < 600; // Less than 10 minutes
-
-  return (
-    <div className={`flex items-center gap-2 px-3 py-1 rounded text-sm ${
-      isLow ? 'bg-red-900 text-red-200' : 'bg-gray-700 text-gray-300'
-    }`}>
-      <Clock className="w-4 h-4" />
-      <span>{formatTime(remaining)}</span>
-    </div>
-  );
-};
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// EXAM LIMIT MODAL
-// ═══════════════════════════════════════════════════════════════════════════════
-const ExamLimitModal = ({ onClose, t }) => (
-  <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
-    <div className="bg-gray-800 rounded-xl max-w-md w-full border border-red-600">
-      <div className="bg-gradient-to-r from-red-600 to-orange-600 p-4 rounded-t-xl">
-        <div className="flex items-center gap-3">
-          <AlertCircle className="w-8 h-8 text-white" />
-          <div>
-            <h2 className="text-xl font-bold text-white">{t.betaLimitReached}</h2>
-            <p className="text-red-100 text-sm">5/5 {t.betaExamsUsed}</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="p-6">
-        <p className="text-gray-300 mb-6">{t.betaLimitMessage}</p>
-        
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition"
-          >
-            {t.cancel}
-          </button>
-          <a
-            href={PREMIUM_MAILTO}
-            className="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 rounded-lg text-white font-semibold text-center transition"
-          >
-            {t.contactForPremium}
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// PREMIUM MODAL (for Inconel)
-// ═══════════════════════════════════════════════════════════════════════════════
-const PremiumModal = ({ onClose, t }) => (
-  <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
-    <div className="bg-gray-800 rounded-xl max-w-md w-full border border-yellow-600">
-      <div className="bg-gradient-to-r from-yellow-600 to-orange-600 p-4 rounded-t-xl">
-        <div className="flex items-center gap-3">
-          <Shield className="w-8 h-8 text-white" />
-          <div>
-            <h2 className="text-xl font-bold text-white">{t.premiumFeature}</h2>
-            <p className="text-yellow-100 text-sm">Inconel (Ni-Cr)</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="p-6">
-        <p className="text-gray-300 mb-6">{t.premiumInconelMessage}</p>
-        
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition"
-          >
-            {t.cancel}
-          </button>
-          <a
-            href={PREMIUM_MAILTO}
-            className="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 rounded-lg text-white font-semibold text-center transition"
-          >
-            {t.contactForPremium}
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// LOGIN SCREEN - EMAIL GATE (No Password!)
-// ═══════════════════════════════════════════════════════════════════════════════
+// Login Component
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { startBetaSession } = useAuth();
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [username, setUsername] = useState('');
+  const [role, setRole] = useState('student');
+  const { login, register } = useAuth();
   const { t, language, setLanguage } = useLanguage();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    if (!email.trim()) {
-      setError(t.emailRequired);
-      setIsLoading(false);
-      return;
-    }
-
-    const result = await startBetaSession(email);
+    const result = await login(email, password);
     if (!result.success) {
-      setError(t[result.error] || result.error);
+      setError(result.error);
     }
-    setIsLoading(false);
   };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    const result = await register({ email, password, username, role });
+    if (result.success) {
+      setIsRegistering(false);
+      setError('Registrazione completata! Ora puoi accedere.');
+    } else {
+      setError(result.error);
+    }
+  };
+
+  useEffect(() => {
+    const initDemoUsers = async () => {
+      try {
+        const existing = await storage.get('users_db');
+        if (!existing) {
+          const demoUsers = [
+            { id: '1', email: 'admin@rt.com', password: 'admin123', username: 'Admin', role: 'admin', createdAt: new Date().toISOString(), exams: [] },
+            { id: '2', email: 'trainer@rt.com', password: 'trainer123', username: 'Trainer', role: 'trainer', createdAt: new Date().toISOString(), exams: [] },
+            { id: '3', email: 'student@rt.com', password: 'student123', username: 'Student', role: 'student', createdAt: new Date().toISOString(), exams: [] }
+          ];
+          await storage.set('users_db', JSON.stringify(demoUsers));
+        }
+      } catch (err) {
+        console.error('Init error:', err);
+      }
+    };
+    initDemoUsers();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center p-4">
-      {/* Language Switcher */}
       <div className="absolute top-4 right-4">
-        <button 
-          onClick={() => setLanguage(language === 'en' ? 'it' : 'en')} 
-          className="flex items-center gap-2 px-3 py-2 bg-gray-800 rounded-lg text-white hover:bg-gray-700"
-        >
+        <button onClick={() => setLanguage(language === 'en' ? 'it' : 'en')} className="flex items-center gap-2 px-3 py-2 bg-gray-800 rounded-lg text-white hover:bg-gray-700">
           <Globe className="w-4 h-4" />
           {language.toUpperCase()}
         </button>
       </div>
       
-      <div className="bg-gray-800 rounded-xl shadow-2xl p-8 w-full max-w-md border border-gray-700">
-        {/* Header */}
+      <div className="bg-gray-800 rounded-lg shadow-2xl p-8 w-full max-w-md border border-gray-700">
         <div className="text-center mb-8">
           <Camera className="w-16 h-16 text-blue-400 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-2">{t.title}</h1>
-          <p className="text-gray-400 text-sm mb-4">{t.subtitle}</p>
-          
-          {/* Beta Badge */}
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-600 to-orange-600 text-black px-4 py-1 rounded-full text-sm font-bold">
-            <Star className="w-4 h-4" />
-            {t.betaLimited}
-          </div>
+          <p className="text-gray-400 text-sm">{t.subtitle}</p>
         </div>
 
-        {/* Welcome Message */}
-        <div className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-4 mb-6">
-          <h2 className="text-lg font-semibold text-blue-300 mb-2">{t.betaWelcome}</h2>
-          <p className="text-gray-300 text-sm">{t.betaEmailGate}</p>
-        </div>
-
-        {/* Email Form - ONLY EMAIL, NO PASSWORD */}
-        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <Mail className="w-4 h-4 inline mr-2" />
-              {t.email}
-            </label>
-            <input 
-              type="email" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
-              placeholder="nome@azienda.com"
-              disabled={isLoading}
-              autoFocus
-            />
+        {error && (
+          <div className="mb-4 p-3 bg-red-900 border border-red-700 rounded text-red-200 text-sm">
+            {error}
           </div>
+        )}
 
-          {error && (
-            <div className="bg-red-900/30 border border-red-600 rounded-lg p-3">
-              <p className="text-red-400 text-sm flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                {error}
-              </p>
-            </div>
+        <form onSubmit={isRegistering ? handleRegister : handleLogin} className="space-y-4">
+          {isRegistering && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t.username}</label>
+                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t.role}</label>
+                <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                  <option value="student">{t.student}</option>
+                  <option value="trainer">{t.trainer}</option>
+                  <option value="admin">{t.admin}</option>
+                </select>
+              </div>
+            </>
           )}
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t.email}</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white" required />
+          </div>
 
-          <button 
-            type="submit" 
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-3 px-6 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isLoading ? (
-              <>
-                <RefreshCw className="w-5 h-5 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              <>
-                <Play className="w-5 h-5" />
-                {t.betaAccessButton}
-              </>
-            )}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t.password}</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white" required />
+          </div>
+
+          <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
+            {isRegistering ? 'Registrati' : t.login}
           </button>
         </form>
 
-        {/* Warning: No Save */}
-        <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-3 mb-6">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-            <p className="text-yellow-200 text-sm">{t.betaNoSave}</p>
-          </div>
-        </div>
-
-        {/* Beta Limitations */}
-        <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-orange-400" />
-            {t.betaLimitations}
-          </h3>
-          <ul className="space-y-2 text-sm text-gray-400">
-            <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
-              {t.betaMaxExams}
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
-              {t.betaSessionTime}
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-              {t.betaNoInconel}
-            </li>
-          </ul>
-        </div>
-
-        {/* Premium CTA */}
         <div className="mt-6 text-center">
-          <a 
-            href={PREMIUM_MAILTO}
-            className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition"
-          >
-            {t.contactForPremium} →
-          </a>
+          <button onClick={() => setIsRegistering(!isRegistering)} className="text-blue-400 hover:text-blue-300 text-sm">
+            {isRegistering ? 'Hai già un account? Accedi' : 'Serve un account? Registrati'}
+          </button>
         </div>
 
-        {/* Version */}
-        <div className="mt-4 text-center">
-          <p className="text-gray-600 text-xs">v{APP_VERSION}</p>
+        <div className="mt-8 pt-6 border-t border-gray-700">
+          <p className="text-xs text-gray-500 text-center mb-2">Account Demo:</p>
+          <div className="text-xs text-gray-400 space-y-1">
+            <p>Admin: admin@rt.com / admin123</p>
+            <p>Trainer: trainer@rt.com / trainer123</p>
+            <p>Student: student@rt.com / student123</p>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// DEFECT TYPE SELECTOR MODAL
-// ═══════════════════════════════════════════════════════════════════════════════
+// Admin Dashboard
+const AdminDashboard = () => {
+  const [users, setUsers] = useState([]);
+  const [stats, setStats] = useState({ totalUsers: 0, totalExams: 0, avgScore: 0, activeUsers: 0 });
+  const { t } = useLanguage();
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const usersResult = await storage.get('users_db');
+      if (usersResult) {
+        const usersData = JSON.parse(usersResult.value);
+        setUsers(usersData);
+        
+        const totalExams = usersData.reduce((sum, u) => sum + (u.exams?.length || 0), 0);
+        const allScores = usersData.flatMap(u => u.exams?.map(e => parseFloat(e.score)) || []);
+        const avgScore = allScores.length > 0 ? allScores.reduce((a, b) => a + b, 0) / allScores.length : 0;
+        
+        setStats({
+          totalUsers: usersData.length,
+          totalExams,
+          avgScore: avgScore.toFixed(1),
+          activeUsers: usersData.filter(u => u.exams?.length > 0).length
+        });
+      }
+    } catch (err) {
+      console.error('Load error:', err);
+    }
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-white">{t.admin} {t.dashboard}</h2>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-blue-900 to-blue-800 p-6 rounded-lg border border-blue-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-300 text-sm">{t.users}</p>
+              <p className="text-3xl font-bold text-white mt-2">{stats.totalUsers}</p>
+            </div>
+            <Users className="w-12 h-12 text-blue-400 opacity-50" />
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-green-900 to-green-800 p-6 rounded-lg border border-green-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-300 text-sm">{t.totalExams}</p>
+              <p className="text-3xl font-bold text-white mt-2">{stats.totalExams}</p>
+            </div>
+            <ClipboardCheck className="w-12 h-12 text-green-400 opacity-50" />
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-purple-900 to-purple-800 p-6 rounded-lg border border-purple-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-purple-300 text-sm">{t.avgScore}</p>
+              <p className="text-3xl font-bold text-white mt-2">{stats.avgScore}%</p>
+            </div>
+            <BarChart3 className="w-12 h-12 text-purple-400 opacity-50" />
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-yellow-900 to-yellow-800 p-6 rounded-lg border border-yellow-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-yellow-300 text-sm">{t.activeUsers}</p>
+              <p className="text-3xl font-bold text-white mt-2">{stats.activeUsers}</p>
+            </div>
+            <TrendingUp className="w-12 h-12 text-yellow-400 opacity-50" />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+        <div className="p-4 border-b border-gray-700">
+          <h3 className="text-lg font-semibold text-white">Statistiche {t.users}</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-900">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t.username}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t.email}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t.role}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t.exams}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t.avgScore}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700">
+              {users.map(user => {
+                const userScores = user.exams?.map(e => parseFloat(e.score)) || [];
+                const userAvg = userScores.length > 0 ? (userScores.reduce((a, b) => a + b, 0) / userScores.length).toFixed(1) : '-';
+                
+                return (
+                  <tr key={user.id} className="hover:bg-gray-750">
+                    <td className="px-4 py-3 text-sm text-white">{user.username}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{user.email}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                        user.role === 'admin' ? 'bg-red-900 text-red-200' :
+                        user.role === 'trainer' ? 'bg-blue-900 text-blue-200' :
+                        'bg-green-900 text-green-200'
+                      }`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{user.exams?.length || 0}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{userAvg}%</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Defect Type Selector Modal
 const DefectTypeModal = ({ onConfirm, onCancel, t }) => {
   const [selectedType, setSelectedType] = useState('crack');
 
@@ -725,14 +559,12 @@ const DefectTypeModal = ({ onConfirm, onCancel, t }) => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// X-RAY SIMULATOR COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════════
+// Simulator Component
 const XRaySimulator = ({ onExamComplete }) => {
   const canvasRef = useRef(null);
   const overlayCanvasRef = useRef(null);
   const { t } = useLanguage();
-  const { user, getRemainingExams, canTakeExam, incrementExamCount } = useAuth();
+  const { user } = useAuth();
   
   const [mode, setMode] = useState('training');
   const [material, setMaterial] = useState('aluminum');
@@ -746,8 +578,6 @@ const XRaySimulator = ({ onExamComplete }) => {
   const [showHints, setShowHints] = useState(true);
   const [pendingClick, setPendingClick] = useState(null);
   const [showDefectModal, setShowDefectModal] = useState(false);
-  const [showExamLimitModal, setShowExamLimitModal] = useState(false);
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
   
   const attenuationCoefficients = {
     aluminum: { density: 2.7, coeff: (kv) => 0.4 - (kv - 100) * 0.002 },
@@ -896,6 +726,7 @@ const XRaySimulator = ({ onExamComplete }) => {
         octx.font = 'bold 16px monospace';
         octx.fillText((idx + 1).toString(), mark.canvasX - 6, mark.canvasY + 6);
         
+        // Show defect type label
         octx.font = 'bold 10px monospace';
         octx.fillStyle = 'rgba(255, 255, 255, 0.9)';
         const typeLabel = t[mark.identifiedType];
@@ -911,6 +742,7 @@ const XRaySimulator = ({ onExamComplete }) => {
     const canvas = overlayCanvasRef.current;
     const rect = canvas.getBoundingClientRect();
     
+    // Calculate correct coordinates considering canvas scaling
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     
@@ -928,6 +760,7 @@ const XRaySimulator = ({ onExamComplete }) => {
     const normalizedX = pendingClick.x / canvas.width;
     const normalizedY = pendingClick.y / canvas.height;
     
+    // Find if click is near a real defect
     let matchedDefect = null;
     let isCorrectType = false;
     
@@ -962,22 +795,60 @@ const XRaySimulator = ({ onExamComplete }) => {
     setPendingClick(null);
   };
 
-  const startExam = async () => {
-    // Check if user can take exam (Beta limit)
-    if (IS_BETA_LIMITED && !canTakeExam()) {
-      setShowExamLimitModal(true);
-      return;
-    }
-    
+  const startExam = () => {
     setExamStarted(true);
     setMarkedDefects([]);
     setScore(null);
     generateDefects();
-    
-    // Increment exam count for Beta
-    if (IS_BETA_LIMITED) {
-      await incrementExamCount();
-    }
+  };
+
+  const generateCertificate = async (user, exam) => {
+    const certText = `
+═══════════════════════════════════════════════════════
+          CERTIFICATO DI COMPLETAMENTO
+           Programma Training RT NAS 410
+═══════════════════════════════════════════════════════
+
+Si certifica che
+
+              ${user.username}
+              
+ha completato con successo l'esame di Radiografia
+Digitale (RT) Non-Distruttiva secondo lo standard
+NAS 410.
+
+Data Esame: ${new Date(exam.date).toLocaleDateString()}
+Punteggio Finale: ${exam.score}%
+
+Materiale Testato: ${exam.material}
+Spessore: ${exam.thickness}mm
+Parametri: ${exam.kV}kV, ${exam.mA}mA
+
+Difetti identificati: ${exam.detected}/${exam.total}
+Precisione classificazione: ${exam.classificationAccuracy}%
+
+Questo certificato dimostra competenza in:
+• Interpretazione immagini radiografiche digitali
+• Riconoscimento e classificazione difetti
+• Valutazione qualità IQI
+• Procedure conformi NAS 410
+
+Autorizzato da: Sistema Training RT
+ID Certificato: ${user.id}-${exam.date}
+
+═══════════════════════════════════════════════════════
+        Valido solo per scopi formativi
+     Non valido per certificazione ufficiale
+═══════════════════════════════════════════════════════
+  `;
+
+    const blob = new Blob([certText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Certificato_RT_${user.username}_${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const evaluateExam = async () => {
@@ -985,6 +856,7 @@ const XRaySimulator = ({ onExamComplete }) => {
     let correctType = 0;
     let totalMarked = markedDefects.length;
     
+    // Check each marked defect
     markedDefects.forEach(mark => {
       if (mark.matchedDefect) {
         correctPosition++;
@@ -999,6 +871,7 @@ const XRaySimulator = ({ onExamComplete }) => {
     const classificationAccuracy = totalMarked > 0 ? (correctType / totalMarked) * 100 : 0;
     const falsePositives = totalMarked - correctPosition;
     
+    // Scoring: 50% position, 30% classification, 20% false positives penalty
     const positionScore = detectionRate * 0.5;
     const classificationScore = classificationAccuracy * 0.3;
     const falsePositivesPenalty = Math.max(0, 20 - (falsePositives * 5));
@@ -1024,15 +897,23 @@ const XRaySimulator = ({ onExamComplete }) => {
     if (onExamComplete) {
       onExamComplete(examResult);
     }
-  };
-
-  // Handle material change with Beta restriction
-  const handleMaterialChange = (newMaterial) => {
-    if (IS_BETA_LIMITED && newMaterial === 'inconel') {
-      setShowPremiumModal(true);
-      return;
+    
+    try {
+      const usersResult = await storage.get('users_db');
+      if (usersResult) {
+        const users = JSON.parse(usersResult.value);
+        const userIndex = users.findIndex(u => u.id === user.id);
+        if (userIndex !== -1) {
+          if (!users[userIndex].exams) {
+            users[userIndex].exams = [];
+          }
+          users[userIndex].exams.push(examResult);
+          await storage.set('users_db', JSON.stringify(users));
+        }
+      }
+    } catch (err) {
+      console.error('Save exam error:', err);
     }
-    setMaterial(newMaterial);
   };
 
   return (
@@ -1041,20 +922,6 @@ const XRaySimulator = ({ onExamComplete }) => {
         <DefectTypeModal
           onConfirm={handleDefectTypeConfirm}
           onCancel={handleDefectTypeCancel}
-          t={t}
-        />
-      )}
-      
-      {showExamLimitModal && (
-        <ExamLimitModal
-          onClose={() => setShowExamLimitModal(false)}
-          t={t}
-        />
-      )}
-      
-      {showPremiumModal && (
-        <PremiumModal
-          onClose={() => setShowPremiumModal(false)}
           t={t}
         />
       )}
@@ -1071,22 +938,10 @@ const XRaySimulator = ({ onExamComplete }) => {
           </button>
         </div>
 
-        {/* Beta exam counter */}
-        {IS_BETA_LIMITED && (
-          <div className="flex items-center gap-2 px-3 py-1 bg-yellow-900/50 border border-yellow-600/50 rounded text-sm">
-            <Star className="w-4 h-4 text-yellow-400" />
-            <span className="text-yellow-200">{t.betaExamsRemaining}: <strong>{getRemainingExams()}/{BETA_LIMITS.maxExams}</strong></span>
-          </div>
-        )}
-
         {mode === 'exam' && (
           <div className="ml-auto flex gap-2">
             {!examStarted ? (
-              <button 
-                onClick={startExam} 
-                disabled={IS_BETA_LIMITED && !canTakeExam()}
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <button onClick={startExam} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold">
                 <Play className="w-4 h-4" />
                 {t.start}
               </button>
@@ -1103,25 +958,11 @@ const XRaySimulator = ({ onExamComplete }) => {
         <div className="w-64 bg-gray-900 border-r border-gray-700 overflow-y-auto p-4 space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">{t.material}</label>
-            <select 
-              value={material} 
-              onChange={(e) => handleMaterialChange(e.target.value)} 
-              className="w-full bg-gray-800 rounded px-3 py-2 text-white border border-gray-700" 
-              disabled={examStarted}
-            >
+            <select value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full bg-gray-800 rounded px-3 py-2 text-white border border-gray-700" disabled={examStarted}>
               <option value="aluminum">{t.aluminium}</option>
               <option value="titanium">{t.titanium}</option>
-              {/* Inconel always shown but triggers Premium modal if Beta */}
-              <option value="inconel" className={IS_BETA_LIMITED ? 'text-gray-500' : ''}>
-                {t.inconel} {IS_BETA_LIMITED ? '🔒' : ''}
-              </option>
+              <option value="inconel">{t.inconel}</option>
             </select>
-            {IS_BETA_LIMITED && (
-              <p className="text-xs text-orange-400 mt-1 flex items-center gap-1">
-                <Lock className="w-3 h-3" />
-                Inconel: Premium
-              </p>
-            )}
           </div>
 
           <div>
@@ -1195,6 +1036,12 @@ const XRaySimulator = ({ onExamComplete }) => {
                   <p className="text-sm text-gray-300">{parseFloat(score.score) >= 80 ? t.passed : t.failed}</p>
                   <p className="text-xs text-gray-400 mt-1">Classificazione: {score.classificationAccuracy}%</p>
                 </div>
+                {parseFloat(score.score) >= 80 && (
+                  <button onClick={() => generateCertificate(user, score)} className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded">
+                    <Download className="w-4 h-4" />
+                    {t.download}
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -1204,109 +1051,150 @@ const XRaySimulator = ({ onExamComplete }) => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// STUDENT DASHBOARD
-// ═══════════════════════════════════════════════════════════════════════════════
+// Student Dashboard
 const StudentDashboard = () => {
-  const { user, getRemainingExams } = useAuth();
+  const [examHistory, setExamHistory] = useState([]);
+  const { user } = useAuth();
   const { t } = useLanguage();
+
+  useEffect(() => {
+    loadExamHistory();
+  }, []);
+
+  const loadExamHistory = async () => {
+    try {
+      const usersResult = await storage.get('users_db');
+      if (usersResult) {
+        const users = JSON.parse(usersResult.value);
+        const currentUser = users.find(u => u.id === user.id);
+        if (currentUser && currentUser.exams) {
+          setExamHistory(currentUser.exams);
+        }
+      }
+    } catch (err) {
+      console.error('Load history error:', err);
+    }
+  };
+
+  const avgScore = examHistory.length > 0 
+    ? (examHistory.reduce((sum, e) => sum + parseFloat(e.score), 0) / examHistory.length).toFixed(1)
+    : 0;
+
+  const generateCertificate = async (exam) => {
+    const certText = `
+═══════════════════════════════════════════════════════
+          CERTIFICATO DI COMPLETAMENTO
+           Programma Training RT NAS 410
+═══════════════════════════════════════════════════════
+
+Si certifica che
+
+              ${user.username}
+              
+ha completato con successo l'esame di Radiografia
+Digitale (RT) Non-Distruttiva secondo lo standard
+NAS 410.
+
+Data Esame: ${new Date(exam.date).toLocaleDateString()}
+Punteggio Finale: ${exam.score}%
+
+Materiale Testato: ${exam.material}
+Spessore: ${exam.thickness}mm
+Parametri: ${exam.kV}kV, ${exam.mA}mA
+
+Difetti identificati: ${exam.detected}/${exam.total}
+Precisione classificazione: ${exam.classificationAccuracy || 'N/A'}%
+
+Questo certificato dimostra competenza in:
+• Interpretazione immagini radiografiche digitali
+• Riconoscimento e classificazione difetti
+• Valutazione qualità IQI
+• Procedure conformi NAS 410
+
+Autorizzato da: Sistema Training RT
+ID Certificato: ${user.id}-${exam.date}
+
+═══════════════════════════════════════════════════════
+        Valido solo per scopi formativi
+     Non valido per certificazione ufficiale
+═══════════════════════════════════════════════════════
+  `;
+
+    const blob = new Blob([certText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Certificato_RT_${user.username}_${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="p-6 space-y-6">
       <h2 className="text-2xl font-bold text-white">{t.dashboard}</h2>
 
-      {/* Beta Info Banner */}
-      {IS_BETA_LIMITED && (
-        <div className="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border border-yellow-600/50 rounded-xl p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Star className="w-6 h-6 text-yellow-400" />
-              <div>
-                <h3 className="text-lg font-semibold text-yellow-300">{t.betaLimited}</h3>
-                <p className="text-sm text-gray-400">{t.betaNoSave}</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-yellow-400">{getRemainingExams()}/{BETA_LIMITS.maxExams}</div>
-              <div className="text-xs text-gray-400">{t.betaExamsRemaining}</div>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gradient-to-br from-blue-900 to-blue-800 p-6 rounded-lg border border-blue-700">
-          <p className="text-blue-300 text-sm">{t.email}</p>
-          <p className="text-xl font-bold text-white mt-2 truncate">{user?.email}</p>
+          <p className="text-blue-300 text-sm">{t.totalExams}</p>
+          <p className="text-3xl font-bold text-white mt-2">{examHistory.length}</p>
         </div>
 
         <div className="bg-gradient-to-br from-green-900 to-green-800 p-6 rounded-lg border border-green-700">
-          <p className="text-green-300 text-sm">{t.betaExamsRemaining}</p>
-          <p className="text-3xl font-bold text-white mt-2">{getRemainingExams()}</p>
+          <p className="text-green-300 text-sm">{t.avgScore}</p>
+          <p className="text-3xl font-bold text-white mt-2">{avgScore}%</p>
         </div>
 
         <div className="bg-gradient-to-br from-purple-900 to-purple-800 p-6 rounded-lg border border-purple-700">
-          <p className="text-purple-300 text-sm">Sessione</p>
-          <p className="text-xl font-bold text-white mt-2">Beta</p>
+          <p className="text-purple-300 text-sm">{t.passed}</p>
+          <p className="text-3xl font-bold text-white mt-2">{examHistory.filter(e => parseFloat(e.score) >= 80).length}</p>
         </div>
       </div>
 
-      {/* Premium CTA */}
-      <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 text-center">
-        <Shield className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-white mb-2">Vuoi di più?</h3>
-        <p className="text-gray-400 mb-4">Passa a Premium per esami illimitati, tutti i materiali e certificati!</p>
-        <a 
-          href={PREMIUM_MAILTO}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 rounded-lg font-semibold transition"
-        >
-          <Mail className="w-5 h-5" />
-          {t.contactForPremium}
-        </a>
+      <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
+        <h3 className="text-lg font-semibold text-white mb-4">{t.examHistory}</h3>
+        <div className="space-y-2">
+          {examHistory.length === 0 ? (
+            <p className="text-gray-400 text-center py-8">Nessun esame ancora</p>
+          ) : (
+            examHistory.slice().reverse().map((exam, idx) => (
+              <div key={idx} className="bg-gray-900 p-4 rounded flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <p className="text-white font-semibold">Esame #{examHistory.length - idx}</p>
+                  <p className="text-sm text-gray-400">{new Date(exam.date).toLocaleString()}</p>
+                  <p className="text-xs text-gray-500 mt-1">{exam.material} • {exam.thickness}mm • {exam.kV}kV</p>
+                  {exam.classificationAccuracy && (
+                    <p className="text-xs text-gray-500">Classificazione: {exam.classificationAccuracy}%</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-white">{exam.score}%</p>
+                  <p className={`text-sm ${parseFloat(exam.score) >= 80 ? 'text-green-400' : 'text-red-400'}`}>
+                    {parseFloat(exam.score) >= 80 ? t.passed : t.failed}
+                  </p>
+                </div>
+                {parseFloat(exam.score) >= 80 && (
+                  <button onClick={() => generateCertificate(exam)} className="px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded text-sm flex items-center gap-1">
+                    <Download className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// MAIN APP CONTENT
-// ═══════════════════════════════════════════════════════════════════════════════
+// Main App
 const AppContent = () => {
   const [view, setView] = useState('simulator');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [showSessionExpired, setShowSessionExpired] = useState(false);
-  const { user, logout, getRemainingExams, isSessionActive } = useAuth();
+  const { user, logout } = useAuth();
   const { t, language, setLanguage } = useLanguage();
-
-  // Check session expiration
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (IS_BETA_LIMITED && user && !isSessionActive()) {
-        setShowSessionExpired(true);
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [user, isSessionActive]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white flex">
-      {/* Session Expired Modal */}
-      {showSessionExpired && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl max-w-md w-full p-6 text-center border border-red-600">
-            <Clock className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">{t.sessionExpired}</h2>
-            <p className="text-gray-400 mb-6">{t.sessionExpiredMessage}</p>
-            <button
-              onClick={() => { logout(); setShowSessionExpired(false); }}
-              className="w-full bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold"
-            >
-              {t.startNewSession}
-            </button>
-          </div>
-        </div>
-      )}
-
       <div className={`${sidebarOpen ? 'w-64' : 'w-0'} bg-gray-900 border-r border-gray-700 transition-all duration-300 overflow-hidden`}>
         <div className="p-4 border-b border-gray-700">
           <div className="flex items-center gap-3 mb-2">
@@ -1316,41 +1204,46 @@ const AppContent = () => {
               <p className="text-xs text-gray-400">NAS 410</p>
             </div>
           </div>
-          
-          {/* Beta Badge */}
-          {IS_BETA_LIMITED && (
-            <div className="mt-2 inline-flex items-center gap-1 bg-gradient-to-r from-yellow-600 to-orange-600 text-black px-2 py-0.5 rounded text-xs font-bold">
-              <Star className="w-3 h-3" />
-              BETA
-            </div>
-          )}
-          
           <div className="mt-4 p-3 bg-gray-800 rounded">
-            <p className="text-sm font-semibold text-white truncate">{user?.email}</p>
-            <p className="text-xs text-gray-400">Utente Beta</p>
+            <p className="text-sm font-semibold text-white">{user.username}</p>
+            <p className="text-xs text-gray-400">{user.email}</p>
+            <span className={`inline-block mt-2 px-2 py-1 rounded text-xs font-semibold ${
+              user.role === 'admin' ? 'bg-red-900 text-red-200' :
+              user.role === 'trainer' ? 'bg-blue-900 text-blue-200' :
+              'bg-green-900 text-green-200'
+            }`}>
+              {t[user.role]}
+            </span>
           </div>
         </div>
 
         <nav className="p-4 space-y-2">
-          <button onClick={() => setView('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded transition ${view === 'dashboard' ? 'bg-blue-600 text-white' : 'hover:bg-gray-800 text-gray-300'}`}>
-            <BarChart3 className="w-5 h-5" />
-            <span>{t.dashboard}</span>
-          </button>
+          {user.role === 'admin' && (
+            <button onClick={() => setView('admin')} className={`w-full flex items-center gap-3 px-4 py-3 rounded transition ${view === 'admin' ? 'bg-blue-600 text-white' : 'hover:bg-gray-800 text-gray-300'}`}>
+              <Users className="w-5 h-5" />
+              <span>{t.admin}</span>
+            </button>
+          )}
+          
+          {(user.role === 'student' || user.role === 'trainer') && (
+            <button onClick={() => setView('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded transition ${view === 'dashboard' ? 'bg-blue-600 text-white' : 'hover:bg-gray-800 text-gray-300'}`}>
+              <BarChart3 className="w-5 h-5" />
+              <span>{t.dashboard}</span>
+            </button>
+          )}
 
           <button onClick={() => setView('simulator')} className={`w-full flex items-center gap-3 px-4 py-3 rounded transition ${view === 'simulator' ? 'bg-blue-600 text-white' : 'hover:bg-gray-800 text-gray-300'}`}>
             <Camera className="w-5 h-5" />
             <span>{t.simulator}</span>
           </button>
+
+          <button onClick={() => setView('certificates')} className={`w-full flex items-center gap-3 px-4 py-3 rounded transition ${view === 'certificates' ? 'bg-blue-600 text-white' : 'hover:bg-gray-800 text-gray-300'}`}>
+            <Award className="w-5 h-5" />
+            <span>{t.certificates}</span>
+          </button>
         </nav>
 
         <div className="absolute bottom-0 w-64 p-4 border-t border-gray-700">
-          {/* Session Timer */}
-          {IS_BETA_LIMITED && (
-            <div className="mb-3">
-              <SessionTimer />
-            </div>
-          )}
-          
           <button onClick={() => setLanguage(language === 'en' ? 'it' : 'en')} className="w-full flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-800 text-gray-300 mb-2">
             <Globe className="w-5 h-5" />
             <span>{language === 'en' ? 'Italiano' : 'English'}</span>
@@ -1370,29 +1263,34 @@ const AppContent = () => {
           <h2 className="text-lg font-semibold">
             {view === 'simulator' && t.simulator}
             {view === 'dashboard' && t.dashboard}
+            {view === 'admin' && `${t.admin} ${t.dashboard}`}
+            {view === 'certificates' && t.certificates}
           </h2>
-          
-          {/* Exam counter in header */}
-          {IS_BETA_LIMITED && (
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-400">{t.betaExamsRemaining}:</span>
-              <span className="font-bold text-yellow-400">{getRemainingExams()}/{BETA_LIMITS.maxExams}</span>
-            </div>
-          )}
+          <div className="w-10" />
         </div>
 
         <div className="flex-1 overflow-auto">
-          {view === 'simulator' && <XRaySimulator onExamComplete={() => {}} />}
+          {view === 'simulator' && <XRaySimulator onExamComplete={() => setView('dashboard')} />}
           {view === 'dashboard' && <StudentDashboard />}
+          {view === 'admin' && user.role === 'admin' && <AdminDashboard />}
+          {view === 'certificates' && (
+            <div className="p-6">
+              <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center">
+                <Award className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
+                <h3 className="text-xl font-bold mb-2">{t.certificates}</h3>
+                <p className="text-gray-400 mb-6">Completa esami con punteggio ≥80% per ricevere certificati</p>
+                <button onClick={() => setView('simulator')} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold">
+                  Vai al {t.simulator}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ROOT COMPONENT
-// ═══════════════════════════════════════════════════════════════════════════════
 const Root = () => {
   const { user, loading } = useAuth();
   const [language, setLanguage] = useState('it');
@@ -1416,9 +1314,6 @@ const Root = () => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// APP EXPORT
-// ═══════════════════════════════════════════════════════════════════════════════
 export default () => (
   <AuthProvider>
     <Root />
