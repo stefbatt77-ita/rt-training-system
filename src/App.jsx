@@ -2,7 +2,7 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  * RT TRAINING SYSTEM - Digital Radiography Simulator
  * NAS 410 / ISO 9712 / EN 4179 Training Platform
- * Version: 2.1.0-premium
+ * Version: 2.1.1-premium
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
@@ -12,7 +12,7 @@ import { Camera, ZoomIn, ZoomOut, RefreshCw, Play, BookOpen, ClipboardCheck, Che
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONFIGURATION & CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
-const APP_VERSION = "2.1.0-premium";
+const APP_VERSION = "2.1.1-premium";
 const COPYRIGHT_OWNER = "Stefano Battisti - RT Training";
 const COPYRIGHT_TEXT = `© ${new Date().getFullYear()} ${COPYRIGHT_OWNER}. All rights reserved.`;
 const CONTACT_EMAIL = "rtsymulationtrainingfeedback@gmail.com";
@@ -96,7 +96,7 @@ const translations = {
     suboptimal: "Suboptimal", overexposed: "Overexposed", underexposed: "Underexposed",
     imageOf: "Image", of: "of", noDefects: "No defects in this image",
     alreadyMarked: "This defect area was already marked",
-    mouseHint: "Scroll: Zoom | Right-click drag: Brightness/Contrast"
+    mouseHint: "Ctrl+Scroll: Zoom | Right-click drag: Brightness/Contrast"
   },
   it: {
     title: "Simulatore Radiografia Digitale RT",
@@ -137,7 +137,7 @@ const translations = {
     suboptimal: "Subottimale", overexposed: "Sovraesposta", underexposed: "Sottoesposta",
     imageOf: "Immagine", of: "di", noDefects: "Nessun difetto in questa immagine",
     alreadyMarked: "Quest'area difetto è già stata marcata",
-    mouseHint: "Scroll: Zoom | Click destro + trascina: Luminosità/Contrasto"
+    mouseHint: "Ctrl+Scroll: Zoom | Click destro + trascina: Luminosità/Contrasto"
   }
 };
 
@@ -595,6 +595,7 @@ const XRaySimulator = ({ onExamComplete }) => {
   const [mA, setMA] = useState(5);
   const [examStarted, setExamStarted] = useState(false);
   const [score, setScore] = useState(null);
+  const [isReviewMode, setIsReviewMode] = useState(false); // Review exam results
   const [showHints, setShowHints] = useState(true); // Toggle per teaching mode
   
   // Multi-image exam (5 images)
@@ -953,8 +954,8 @@ const XRaySimulator = ({ onExamComplete }) => {
     const baseIntensity = 200;
     
     // CR has more quantum noise, DDA has less but has bad pixels
-    const crQuantumNoiseFactor = 15; // Stronger quantum noise for CR
-    const ddaBaseNoise = 4; // Lower base noise for DDA
+    const crQuantumNoiseFactor = 4; // Moderate quantum noise for CR (realistic)
+    const ddaBaseNoise = 3; // Lower base noise for DDA
     
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
@@ -1104,10 +1105,10 @@ const XRaySimulator = ({ onExamComplete }) => {
         const noiseSeedVal = noiseSeed + y * width + x;
         
         if (detectorType === 'cr') {
-          // CR: Quantum noise (Poisson-like) + granular noise from phosphor plate
-          const quantumNoise = (poissonNoise(Math.max(1, intensity / 20), noiseSeedVal) - intensity / 20) * crQuantumNoiseFactor;
-          const granularNoise = (seededRandom(noiseSeedVal * 1.3) * 2 - 1) * 8;
-          const structureNoise = Math.sin(x * 0.5 + seededRandom(noiseSeedVal) * 10) * 2; // Plate structure
+          // CR: Moderate quantum noise + subtle granular noise from phosphor plate
+          const quantumNoise = (poissonNoise(Math.max(1, intensity / 25), noiseSeedVal) - intensity / 25) * crQuantumNoiseFactor;
+          const granularNoise = (seededRandom(noiseSeedVal * 1.3) * 2 - 1) * 3;
+          const structureNoise = Math.sin(x * 0.3 + seededRandom(noiseSeedVal) * 5) * 0.8; // Subtle plate structure
           intensity += quantumNoise + granularNoise + structureNoise;
         } else {
           // DDA: Lower uniform noise
@@ -1299,10 +1300,12 @@ const XRaySimulator = ({ onExamComplete }) => {
       }
     }
     
-    // Draw teaching mode hints (only if showHints is true)
-    if (mode === 'teaching' && showHints) {
+    // Draw teaching mode hints (only if showHints is true) OR review mode (show real defects)
+    if ((mode === 'teaching' && showHints) || isReviewMode) {
       defects.forEach(defect => {
-        octx.strokeStyle = 'rgba(255, 220, 0, 0.9)';
+        // In review mode, use cyan color to distinguish from user marks
+        const hintColor = isReviewMode ? 'rgba(0, 255, 255, 0.9)' : 'rgba(255, 220, 0, 0.9)';
+        octx.strokeStyle = hintColor;
         octx.lineWidth = 3;
         octx.setLineDash([8, 4]);
         octx.beginPath();
@@ -1327,7 +1330,7 @@ const XRaySimulator = ({ onExamComplete }) => {
         const label = typeMap[defect.type] || defect.type.toUpperCase();
         const labelX = defect.x * width + 15;
         const labelY = defect.y * height - 15;
-        octx.fillStyle = 'rgba(255, 220, 0, 0.9)';
+        octx.fillStyle = hintColor;
         octx.fillRect(labelX - 2, labelY - 10, label.length * 6 + 4, 14);
         octx.fillStyle = 'rgba(0, 0, 0, 0.9)';
         octx.font = 'bold 9px monospace';
@@ -1394,7 +1397,7 @@ const XRaySimulator = ({ onExamComplete }) => {
     
   }, [material, thickness, kV, mA, defects, mode, showHints, markedDefects, examStarted, 
       brightness, contrast, offsetCorrection, gainCorrection, badPixelCorrection, badPixelsMap,
-      noiseSeed, detectorType, iqiType, showIQI, specimenType, isDrawing, selectionStart, selectionEnd, score]);
+      noiseSeed, detectorType, iqiType, showIQI, specimenType, isDrawing, selectionStart, selectionEnd, score, isReviewMode]);
 
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1412,11 +1415,16 @@ const XRaySimulator = ({ onExamComplete }) => {
     };
   };
 
-  // Zoom with mouse wheel
+  // Zoom with mouse wheel - only when cursor is over canvas
   const handleWheel = (e) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    setZoom(prev => Math.max(0.5, Math.min(3, prev + delta)));
+    // Only zoom if Ctrl key is pressed OR if canvas is focused
+    // This allows normal page scrolling while still enabling zoom
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      setZoom(prev => Math.max(0.5, Math.min(3, prev + delta)));
+    }
+    // Without Ctrl, allow normal scroll behavior
   };
 
   // Right-click drag for brightness/contrast
@@ -1561,6 +1569,7 @@ const XRaySimulator = ({ onExamComplete }) => {
     setMode(newMode);
     setExamStarted(false);
     setScore(null);
+    setIsReviewMode(false);
     setMarkedDefects([]);
     setExamImages([]);
     setCurrentImageIndex(0);
@@ -1590,6 +1599,7 @@ const XRaySimulator = ({ onExamComplete }) => {
     setExamStarted(true);
     setMarkedDefects([]);
     setScore(null);
+    setIsReviewMode(false);
     setZoom(1);
     setBrightness(0);
     setContrast(0);
@@ -1639,6 +1649,7 @@ const XRaySimulator = ({ onExamComplete }) => {
     // Save current image marks first
     const finalAllMarked = [...allMarkedDefects];
     finalAllMarked[currentImageIndex] = markedDefects;
+    setAllMarkedDefects(finalAllMarked); // Save for review mode
     
     let totalDefects = 0;
     let totalCorrectPosition = 0;
@@ -1683,6 +1694,11 @@ const XRaySimulator = ({ onExamComplete }) => {
     };
     
     setScore(examResult);
+    setIsReviewMode(true); // Enable review mode
+    setCurrentImageIndex(0); // Start review from first image
+    setDefects(examImages[0].defects);
+    setMarkedDefects(finalAllMarked[0] || []);
+    
     if (onExamComplete) onExamComplete(examResult);
     
     // Save to storage
@@ -1698,6 +1714,16 @@ const XRaySimulator = ({ onExamComplete }) => {
         }
       }
     } catch (err) {}
+  };
+
+  // Navigate review images (after exam is finished)
+  const goToReviewImage = (idx) => {
+    if (idx >= 0 && idx < examImages.length) {
+      setCurrentImageIndex(idx);
+      setDefects(examImages[idx].defects);
+      setMarkedDefects(allMarkedDefects[idx] || []);
+      setNoiseSeed(Date.now());
+    }
   };
 
 
@@ -1768,6 +1794,19 @@ const XRaySimulator = ({ onExamComplete }) => {
                   {t.finish}
                 </button>
               </>
+            )}
+            {/* Review mode navigation - after exam is finished */}
+            {mode === 'exam' && score && isReviewMode && (
+              <div className="flex items-center gap-2 bg-cyan-900 rounded px-3 py-1 border border-cyan-600">
+                <span className="text-xs text-cyan-300 mr-2">Revisione:</span>
+                <button onClick={() => goToReviewImage(currentImageIndex - 1)} disabled={currentImageIndex === 0} className="p-1 hover:bg-cyan-800 rounded disabled:opacity-30">
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <span className="text-sm font-medium">{t.imageOf} {currentImageIndex + 1} {t.of} 5</span>
+                <button onClick={() => goToReviewImage(currentImageIndex + 1)} disabled={currentImageIndex === examImages.length - 1} className="p-1 hover:bg-cyan-800 rounded disabled:opacity-30">
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
             )}
           </div>
         )}
@@ -1969,9 +2008,9 @@ const XRaySimulator = ({ onExamComplete }) => {
 
         {/* Main canvas area */}
         <div className="flex-1 flex flex-col bg-black relative min-w-0">
-          <div ref={containerRef} className="flex-1 relative overflow-auto flex items-center justify-center p-4">
-            <div className="relative" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
-              <canvas ref={canvasRef} width={800} height={600} className="border border-gray-700 rounded" />
+          <div ref={containerRef} className="flex-1 relative overflow-auto flex items-center justify-center" style={{ minHeight: 0 }}>
+            <div className="relative m-auto p-4" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
+              <canvas ref={canvasRef} width={800} height={600} className="border border-gray-700 rounded shadow-lg" />
               <canvas 
                 ref={overlayCanvasRef} 
                 width={800} 
@@ -2018,7 +2057,12 @@ const XRaySimulator = ({ onExamComplete }) => {
                   <p className="text-sm text-gray-300">{t.detected}: <span className="font-bold text-white">{score.detected}/{score.total}</span></p>
                   <p className="text-sm text-gray-300">{t.correctType}: <span className="font-bold text-white">{score.correctType}</span></p>
                   <p className="text-sm text-gray-300">{t.falsePositives}: <span className="font-bold text-white">{score.falsePositives}</span></p>
-                  {mode === 'exam' && <p className="text-xs text-gray-400 mt-1">5 immagini analizzate</p>}
+                  {mode === 'exam' && isReviewMode && (
+                    <p className="text-xs text-cyan-400 mt-2 flex items-center gap-1">
+                      <Eye className="w-3 h-3" />
+                      Revisione immagine {currentImageIndex + 1}/5 — Difetti reali in ciano, tue selezioni colorate
+                    </p>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-3xl font-bold text-green-400">{score.score}%</p>
