@@ -1538,36 +1538,12 @@ const LoginScreen = () => {
         {/* Welcome Message */}
         <div className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-4 mb-6">
           <h2 className="text-lg font-semibold text-blue-300 mb-2">{t.betaWelcome}</h2>
-          <p className="text-gray-300 text-sm">Compila il form di registrazione per accedere alla Beta gratuita.</p>
+          <p className="text-gray-300 text-sm">Inserisci la tua email per accedere alla Beta gratuita.</p>
         </div>
 
-        {/* Step 1: Google Form Registration */}
+        {/* Email Access */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center text-white text-sm font-bold">1</div>
-            <h3 className="text-sm font-semibold text-white">{t.betaRegisterFirst}</h3>
-          </div>
-          <a 
-            href={BETA_REGISTRATION_FORM}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold py-3 px-6 rounded-lg transition text-center"
-          >
-            📋 {t.betaRegisterButton}
-          </a>
-        </div>
-
-        {/* Divider */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex-1 h-px bg-gray-700"></div>
-          <span className="text-xs text-gray-500">{t.betaAlreadyRegistered}</span>
-          <div className="flex-1 h-px bg-gray-700"></div>
-        </div>
-
-        {/* Step 2: Email Access */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">2</div>
             <h3 className="text-sm font-semibold text-white">{t.betaEmailGate}</h3>
           </div>
           
